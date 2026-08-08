@@ -9,7 +9,7 @@ from queries import (
     get_player_search_list, get_player_bio, get_player_passing_season,
     get_player_pressure_season, get_player_rushing_season, get_player_receiving_season,
     get_player_weekly_trend, get_player_games_played, convertir_taille_poids,
-    get_qb_full_rankings, get_rb_full_rankings, get_wr_full_rankings, get_rank_label,
+    get_qb_full_rankings, get_rb_full_rankings, get_wr_full_rankings, get_def_full_rankings, get_rank_label,
     get_player_defensive_season, get_player_defensive_weekly_trend,
     render_global_search,
 )
@@ -157,12 +157,15 @@ with onglet_overview:
         st.subheader("Passing")
         p = passing.iloc[0]
         classement_qb = get_qb_full_rankings(season)
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Tentatives", int(p["tentatives"]))
-        col2.metric("Complétions", int(p["completions"]))
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Tentatives", int(p["tentatives"]), get_rank_label(classement_qb, player_id, "tentatives"))
+        col2.metric("Complétions", int(p["completions"]), get_rank_label(classement_qb, player_id, "completions"))
         col3.metric("Yards", f"{int(p['yards']):,}" if p["yards"] == p["yards"] else "—",
                     get_rank_label(classement_qb, player_id, "yards"))
-        col4.metric("TD / INT", f"{int(p['td'])} / {int(p['interceptions'])}")
+        col4, col5 = st.columns(2)
+        col4.metric("TD", int(p["td"]), get_rank_label(classement_qb, player_id, "td"))
+        col5.metric("INT", int(p["interceptions"]),
+                    get_rank_label(classement_qb, player_id, "interceptions", ascending=True))
         st.divider()
 
     if a_rushing:
@@ -170,10 +173,10 @@ with onglet_overview:
         r = rushing.iloc[0]
         classement_rb = get_rb_full_rankings(season)
         col1, col2, col3 = st.columns(3)
-        col1.metric("Courses", int(r["courses"]))
+        col1.metric("Courses", int(r["courses"]), get_rank_label(classement_rb, player_id, "courses"))
         col2.metric("Yards", f"{int(r['yards']):,}" if r["yards"] == r["yards"] else "—",
                     get_rank_label(classement_rb, player_id, "yards"))
-        col3.metric("TD", int(r["td"]))
+        col3.metric("TD", int(r["td"]), get_rank_label(classement_rb, player_id, "td"))
         st.divider()
 
     if a_receiving:
@@ -181,26 +184,34 @@ with onglet_overview:
         rc = receiving.iloc[0]
         classement_wr = get_wr_full_rankings(season)
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Cibles", int(rc["cibles"]))
-        col2.metric("Réceptions", int(rc["receptions"]))
+        col1.metric("Cibles", int(rc["cibles"]), get_rank_label(classement_wr, player_id, "cibles"))
+        col2.metric("Réceptions", int(rc["receptions"]), get_rank_label(classement_wr, player_id, "receptions"))
         col3.metric("Yards", f"{int(rc['yards']):,}" if rc["yards"] == rc["yards"] else "—",
                     get_rank_label(classement_wr, player_id, "yards"))
-        col4.metric("TD", int(rc["td"]))
+        col4.metric("TD", int(rc["td"]), get_rank_label(classement_wr, player_id, "td"))
         st.divider()
 
     if a_defense:
         st.subheader("Defense")
         d = defense.iloc[0]
+        classement_def = get_def_full_rankings(season)
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Tacles (total)", int(d["tacles_totaux"]))
-        col2.metric("Tacles pour perte", int(d["tacles_pour_perte"]))
-        col3.metric("Sacks", f"{d['sacks_totaux']:.1f}")
-        col4.metric("Pressions QB", int(d["pressions_qb"]))
+        col1.metric("Tacles (total)", int(d["tacles_totaux"]),
+                    get_rank_label(classement_def, player_id, "tacles_totaux"))
+        col2.metric("Tacles pour perte", int(d["tacles_pour_perte"]),
+                    get_rank_label(classement_def, player_id, "tacles_pour_perte"))
+        col3.metric("Sacks", f"{d['sacks_totaux']:.1f}",
+                    get_rank_label(classement_def, player_id, "sacks_totaux"))
+        col4.metric("Pressions QB", int(d["pressions_qb"]),
+                    get_rank_label(classement_def, player_id, "pressions_qb"))
 
         col1, col2, col3 = st.columns(3)
-        col1.metric("Interceptions", int(d["interceptions"]))
-        col2.metric("Passes défendues", int(d["passes_defendues"]))
-        col3.metric("Fumbles forcés", int(d["fumbles_forces"]))
+        col1.metric("Interceptions", int(d["interceptions"]),
+                    get_rank_label(classement_def, player_id, "interceptions"))
+        col2.metric("Passes défendues", int(d["passes_defendues"]),
+                    get_rank_label(classement_def, player_id, "passes_defendues"))
+        col3.metric("Fumbles forcés", int(d["fumbles_forces"]),
+                    get_rank_label(classement_def, player_id, "fumbles_forces"))
         st.divider()
 
     if a_defense:

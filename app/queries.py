@@ -793,60 +793,131 @@ def get_player_season_epa(player_id: str, season: int, role: str):
 
 @st.cache_data(ttl=3600)
 def get_qb_full_rankings(season: int, min_dropbacks: int = 100):
-    """Classement complet des QB qualifiés sur la saison (yards, EPA, CPOE) — sert de base à get_rank_label."""
+    """Classement complet des QB qualifiés sur la saison — sert de base à
+    get_rank_label pour chaque stat individuelle (tentatives, complétions,
+    yards, TD, INT, EPA, CPOE), pas seulement yards/EPA comme avant."""
     con = get_connection()
     query = """
         SELECT passer_player_id AS player_id,
+               COUNT(*) FILTER (WHERE pass = 1) AS tentatives,
+               COUNT(*) FILTER (WHERE complete_pass = 1) AS completions,
                SUM(passing_yards) AS yards,
-               ROUND(AVG(epa), 3) AS epa_per_play,
+               COUNT(*) FILTER (WHERE complete_pass = 1 AND touchdown = 1) AS td,
+               COUNT(*) FILTER (WHERE interception = 1) AS interceptions,
+               ROUND(AVG(epa) FILTER (WHERE qb_dropback = 1), 3) AS epa_per_play,
                ROUND(AVG(cpoe) FILTER (WHERE pass = 1), 1) AS cpoe
         FROM plays
-        WHERE season = ? AND qb_dropback = 1 AND passer_player_id IS NOT NULL
+        WHERE season = ? AND passer_player_id IS NOT NULL
         GROUP BY passer_player_id
-        HAVING COUNT(*) >= ?
+        HAVING COUNT(*) FILTER (WHERE qb_dropback = 1) >= ?
     """
     df = con.execute(query, [season, min_dropbacks]).fetchdf()
     return df
 
 @st.cache_data(ttl=3600)
 def get_rb_full_rankings(season: int, min_carries: int = 50):
-    """Classement complet des RB qualifiés sur la saison (yards, EPA) — sert de base à get_rank_label."""
+    """Classement complet des RB qualifiés sur la saison — sert de base à
+    get_rank_label (yards, TD, EPA)."""
     con = get_connection()
     query = """
         SELECT rusher_player_id AS player_id,
+               COUNT(*) FILTER (WHERE rush = 1) AS courses,
                SUM(rushing_yards) AS yards,
-               ROUND(AVG(epa), 3) AS epa_per_play
+               COUNT(*) FILTER (WHERE rush = 1 AND touchdown = 1) AS td,
+               ROUND(AVG(epa) FILTER (WHERE rush = 1), 3) AS epa_per_play
         FROM plays
-        WHERE season = ? AND rush = 1 AND rusher_player_id IS NOT NULL
+        WHERE season = ? AND rusher_player_id IS NOT NULL
         GROUP BY rusher_player_id
-        HAVING COUNT(*) >= ?
+        HAVING COUNT(*) FILTER (WHERE rush = 1) >= ?
     """
     df = con.execute(query, [season, min_carries]).fetchdf()
     return df
 
 @st.cache_data(ttl=3600)
 def get_wr_full_rankings(season: int, min_targets: int = 30):
-    """Classement complet des receveurs qualifiés sur la saison (yards, EPA) — sert de base à get_rank_label."""
+    """Classement complet des receveurs qualifiés sur la saison — sert de
+    base à get_rank_label (cibles, réceptions, yards, TD, EPA)."""
     con = get_connection()
     query = """
         SELECT receiver_player_id AS player_id,
+               COUNT(*) FILTER (WHERE pass = 1) AS cibles,
+               COUNT(*) FILTER (WHERE complete_pass = 1) AS receptions,
                SUM(receiving_yards) AS yards,
-               ROUND(AVG(epa), 3) AS epa_per_play
+               COUNT(*) FILTER (WHERE complete_pass = 1 AND touchdown = 1) AS td,
+               ROUND(AVG(epa) FILTER (WHERE pass = 1), 3) AS epa_per_play
         FROM plays
-        WHERE season = ? AND pass = 1 AND receiver_player_id IS NOT NULL
+        WHERE season = ? AND receiver_player_id IS NOT NULL
         GROUP BY receiver_player_id
-        HAVING COUNT(*) >= ?
+        HAVING COUNT(*) FILTER (WHERE pass = 1) >= ?
     """
     df = con.execute(query, [season, min_targets]).fetchdf()
     return df
 
 @st.cache_data(ttl=3600)
-def get_rank_label(df_rankings, player_id: str, metric_col: str):
+def get_def_full_rankings(season: int, min_actions: int = 10):
+    """Classement complet des défenseurs qualifiés sur la saison — sert de
+    base à get_rank_label (tacles, tacles pour perte, sacks, pressions,
+    INT, passes défendues, fumbles forcés). Généralisation à toute la ligue
+    de get_player_defensive_season.
+
+    Contrairement aux autres classements, il n'y a pas UNE colonne
+    'defender_player_id' dans plays : chaque type d'action défensive vit
+    dans sa propre colonne (solo_tackle_1_player_id, sack_player_id,
+    interception_player_id, ...). On empile (UNION ALL) chaque colonne
+    comme une ligne 'ce joueur a fait cette action', puis on regroupe par
+    joueur — même schéma dénormalisé que get_player_defensive_season, mais
+    tous les joueurs à la fois plutôt qu'un seul passé en paramètre."""
+    con = get_connection()
+    # (colonne source, catégorie, poids) — demi-sack compte pour 0.5, comme
+    # get_player_defensive_season (sacks_pleins + demi_sacks * 0.5).
+    colonnes = [
+        ("solo_tackle_1_player_id", "tacles", 1), ("solo_tackle_2_player_id", "tacles", 1),
+        ("assist_tackle_1_player_id", "tacles", 1), ("assist_tackle_2_player_id", "tacles", 1),
+        ("assist_tackle_3_player_id", "tacles", 1), ("assist_tackle_4_player_id", "tacles", 1),
+        ("tackle_for_loss_1_player_id", "tfl", 1), ("tackle_for_loss_2_player_id", "tfl", 1),
+        ("sack_player_id", "sacks", 1),
+        ("half_sack_1_player_id", "sacks", 0.5), ("half_sack_2_player_id", "sacks", 0.5),
+        ("qb_hit_1_player_id", "pressions", 1), ("qb_hit_2_player_id", "pressions", 1),
+        ("interception_player_id", "interceptions", 1),
+        ("pass_defense_1_player_id", "pd", 1), ("pass_defense_2_player_id", "pd", 1),
+        ("forced_fumble_player_1_player_id", "ff", 1), ("forced_fumble_player_2_player_id", "ff", 1),
+    ]
+    branches = " UNION ALL ".join(
+        f"SELECT {col} AS player_id, '{cat}' AS categorie, {poids} AS poids "
+        f"FROM plays WHERE season = ? AND {col} IS NOT NULL"
+        for col, cat, poids in colonnes
+    )
+    query = f"""
+        WITH actions AS ({branches})
+        SELECT player_id,
+               SUM(poids) FILTER (WHERE categorie = 'tacles') AS tacles_totaux,
+               SUM(poids) FILTER (WHERE categorie = 'tfl') AS tacles_pour_perte,
+               SUM(poids) FILTER (WHERE categorie = 'sacks') AS sacks_totaux,
+               SUM(poids) FILTER (WHERE categorie = 'pressions') AS pressions_qb,
+               SUM(poids) FILTER (WHERE categorie = 'interceptions') AS interceptions,
+               SUM(poids) FILTER (WHERE categorie = 'pd') AS passes_defendues,
+               SUM(poids) FILTER (WHERE categorie = 'ff') AS fumbles_forces,
+               SUM(poids) AS volume_total
+        FROM actions
+        GROUP BY player_id
+        HAVING SUM(poids) >= ?
+    """
+    params = [season] * len(colonnes) + [min_actions]
+    df = con.execute(query, params).fetchdf()
+    for col in ["tacles_totaux", "tacles_pour_perte", "sacks_totaux", "pressions_qb",
+                "interceptions", "passes_defendues", "fumbles_forces"]:
+        df[col] = df[col].fillna(0)
+    return df
+
+@st.cache_data(ttl=3600)
+def get_rank_label(df_rankings, player_id: str, metric_col: str, ascending: bool = False):
     """Retourne '#3 / 24' si le joueur est qualifié pour ce classement,
-    None sinon (échantillon trop petit ou stat non applicable)."""
+    None sinon (échantillon trop petit ou stat non applicable).
+    ascending=True pour les stats où moins vaut mieux (ex. interceptions
+    lancées par un QB) — sinon le meilleur joueur serait classé dernier."""
     if df_rankings.empty or player_id not in df_rankings["player_id"].values:
         return None
-    df_sorted = df_rankings.sort_values(metric_col, ascending=False).reset_index(drop=True)
+    df_sorted = df_rankings.sort_values(metric_col, ascending=ascending).reset_index(drop=True)
     idx = df_sorted[df_sorted["player_id"] == player_id].index
     if len(idx) == 0:
         return None

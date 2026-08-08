@@ -14,7 +14,7 @@ HOME_CSS = """
 
 html, body, [class*="css"] { font-family: 'Manrope', sans-serif; }
 
-.block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+.block-container { padding-top: 4rem !important; padding-bottom: 2rem !important; }
 [data-testid="stVerticalBlock"] { gap: 0.6rem; }
 hr { margin: 0.6rem 0 !important; }
 h1, h2, h3 { margin-top: 0.2rem !important; margin-bottom: 0.3rem !important; }
@@ -77,7 +77,7 @@ PAGE_FONT_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
 html, body, [class*="css"] { font-family: 'Manrope', sans-serif; }
 
-.block-container { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+.block-container { padding-top: 4rem !important; padding-bottom: 2rem !important; }
 [data-testid="stVerticalBlock"] { gap: 0.6rem; }
 hr { margin: 0.6rem 0 !important; }
 h1, h2, h3 { margin-top: 0.2rem !important; margin-bottom: 0.3rem !important; }
