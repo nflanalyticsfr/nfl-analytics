@@ -34,12 +34,16 @@ if initial_game_id:
     if len(morceaux) >= 2 and morceaux[0].isdigit() and morceaux[1].isdigit():
         season_cible, week_cible = int(morceaux[0]), int(morceaux[1])
 
-index_season = seasons.index(season_cible) if season_cible in seasons else len(seasons) - 1
-season = st.selectbox("Saison", seasons, index=index_season, key="game_season")
+col_season, col_week, col_match = st.columns([1, 1, 2])
 
-weeks = get_weeks_for_season(season)
-index_week = weeks.index(week_cible) if week_cible in weeks else len(weeks) - 1
-week = st.selectbox("Semaine", weeks, index=index_week, key="game_week")
+with col_season:
+    index_season = seasons.index(season_cible) if season_cible in seasons else len(seasons) - 1
+    season = st.selectbox("Saison", seasons, index=index_season, key="game_season")
+
+with col_week:
+    weeks = get_weeks_for_season(season)
+    index_week = weeks.index(week_cible) if week_cible in weeks else len(weeks) - 1
+    week = st.selectbox("Semaine", weeks, index=index_week, key="game_week")
 
 games = get_games_for_week(season, week)
 if games.empty:
@@ -56,7 +60,9 @@ index_defaut = 0
 if initial_game_id and initial_game_id in games["game_id"].values:
     index_defaut = int(games[games["game_id"] == initial_game_id].index[0])
 
-match_choisi = st.selectbox("Match", options_match, index=index_defaut, key="game_select")
+with col_match:
+    match_choisi = st.selectbox("Match", options_match, index=index_defaut, key="game_select")
+
 game_id = games.iloc[options_match.index(match_choisi)]["game_id"]
 st.query_params["game"] = game_id
 

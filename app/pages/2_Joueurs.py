@@ -246,16 +246,20 @@ with onglet_avance:
                     get_rank_label(classement_qb, player_id, "epa_per_play"))
         col2.metric("CPOE", f"{p['cpoe']:+.1f}%" if p["cpoe"] == p["cpoe"] else "—",
                     get_rank_label(classement_qb, player_id, "cpoe"))
-        col3.metric("Air Yards Moy.", f"{p['air_yards_moy']:.1f}" if p["air_yards_moy"] == p["air_yards_moy"] else "—")
+        col3.metric("Air Yards Moy.", f"{p['air_yards_moy']:.1f}" if p["air_yards_moy"] == p["air_yards_moy"] else "—",
+                    get_rank_label(classement_qb, player_id, "air_yards_moy"))
 
         pression = get_player_pressure_season(player_id, season)
         if not pression.empty:
             pr = pression.iloc[0]
             st.write("**Pression subie**")
             col1, col2, col3 = st.columns(3)
-            col1.metric("Dropbacks pressés", f"{pr['pressions_subies']:.0f}" if pr["pressions_subies"] == pr["pressions_subies"] else "—")
-            col2.metric("Taux de pression", f"{pr['taux_pression']:.1%}" if pr["taux_pression"] == pr["taux_pression"] else "—")
-            col3.metric("Sacks subis", f"{pr['sacks_subis']:.0f}" if pr["sacks_subis"] == pr["sacks_subis"] else "—")
+            col1.metric("Dropbacks pressés", f"{pr['pressions_subies']:.0f}" if pr["pressions_subies"] == pr["pressions_subies"] else "—",
+                        get_rank_label(classement_qb, player_id, "pressions_subies", ascending=True))
+            col2.metric("Taux de pression", f"{pr['taux_pression']:.1%}" if pr["taux_pression"] == pr["taux_pression"] else "—",
+                        get_rank_label(classement_qb, player_id, "taux_pression", ascending=True))
+            col3.metric("Sacks subis", f"{pr['sacks_subis']:.0f}" if pr["sacks_subis"] == pr["sacks_subis"] else "—",
+                        get_rank_label(classement_qb, player_id, "sacks_subis", ascending=True))
         st.divider()
 
     if a_rushing:
@@ -273,8 +277,10 @@ with onglet_avance:
         col1, col2, col3 = st.columns(3)
         col1.metric("EPA/Cible", f"{rc['epa_per_play']:.3f}",
                     get_rank_label(classement_wr, player_id, "epa_per_play"))
-        col2.metric("Air Yards Moy.", f"{rc['air_yards_moy']:.1f}" if rc["air_yards_moy"] == rc["air_yards_moy"] else "—")
-        col3.metric("YAC Moy.", f"{rc['yac_moy']:.1f}" if rc["yac_moy"] == rc["yac_moy"] else "—")
+        col2.metric("Air Yards Moy.", f"{rc['air_yards_moy']:.1f}" if rc["air_yards_moy"] == rc["air_yards_moy"] else "—",
+                    get_rank_label(classement_wr, player_id, "air_yards_moy"))
+        col3.metric("YAC Moy.", f"{rc['yac_moy']:.1f}" if rc["yac_moy"] == rc["yac_moy"] else "—",
+                    get_rank_label(classement_wr, player_id, "yac_moy"))
         st.divider()
 
     if roles_actifs:

@@ -795,7 +795,7 @@ def get_player_season_epa(player_id: str, season: int, role: str):
 def get_qb_full_rankings(season: int, min_dropbacks: int = 100):
     """Classement complet des QB qualifiés sur la saison — sert de base à
     get_rank_label pour chaque stat individuelle (tentatives, complétions,
-    yards, TD, INT, EPA, CPOE), pas seulement yards/EPA comme avant."""
+    yards, TD, INT, EPA, CPOE, air yards, pression subie)."""
     con = get_connection()
     query = """
         SELECT passer_player_id AS player_id,
@@ -805,7 +805,15 @@ def get_qb_full_rankings(season: int, min_dropbacks: int = 100):
                COUNT(*) FILTER (WHERE complete_pass = 1 AND touchdown = 1) AS td,
                COUNT(*) FILTER (WHERE interception = 1) AS interceptions,
                ROUND(AVG(epa) FILTER (WHERE qb_dropback = 1), 3) AS epa_per_play,
-               ROUND(AVG(cpoe) FILTER (WHERE pass = 1), 1) AS cpoe
+               ROUND(AVG(cpoe) FILTER (WHERE pass = 1), 1) AS cpoe,
+               ROUND(AVG(air_yards) FILTER (WHERE pass = 1), 1) AS air_yards_moy,
+               SUM(COALESCE(CAST(was_pressure AS DOUBLE), 0)) FILTER (WHERE qb_dropback = 1) AS pressions_subies,
+               SUM(CAST(sack AS DOUBLE)) AS sacks_subis,
+               ROUND(
+                   SUM(COALESCE(CAST(was_pressure AS DOUBLE), 0)) FILTER (WHERE qb_dropback = 1) * 1.0
+                   / NULLIF(COUNT(*) FILTER (WHERE qb_dropback = 1), 0),
+                   3
+               ) AS taux_pression
         FROM plays
         WHERE season = ? AND passer_player_id IS NOT NULL
         GROUP BY passer_player_id
@@ -836,7 +844,7 @@ def get_rb_full_rankings(season: int, min_carries: int = 50):
 @st.cache_data(ttl=3600)
 def get_wr_full_rankings(season: int, min_targets: int = 30):
     """Classement complet des receveurs qualifiés sur la saison — sert de
-    base à get_rank_label (cibles, réceptions, yards, TD, EPA)."""
+    base à get_rank_label (cibles, réceptions, yards, TD, EPA, air yards, YAC)."""
     con = get_connection()
     query = """
         SELECT receiver_player_id AS player_id,
@@ -844,7 +852,9 @@ def get_wr_full_rankings(season: int, min_targets: int = 30):
                COUNT(*) FILTER (WHERE complete_pass = 1) AS receptions,
                SUM(receiving_yards) AS yards,
                COUNT(*) FILTER (WHERE complete_pass = 1 AND touchdown = 1) AS td,
-               ROUND(AVG(epa) FILTER (WHERE pass = 1), 3) AS epa_per_play
+               ROUND(AVG(epa) FILTER (WHERE pass = 1), 3) AS epa_per_play,
+               ROUND(AVG(air_yards) FILTER (WHERE pass = 1), 1) AS air_yards_moy,
+               ROUND(AVG(yards_after_catch) FILTER (WHERE complete_pass = 1), 1) AS yac_moy
         FROM plays
         WHERE season = ? AND receiver_player_id IS NOT NULL
         GROUP BY receiver_player_id
