@@ -361,7 +361,7 @@ def get_team_qb_leaders(team: str, season: int, min_dropbacks: int = 20):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.passer_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.posteam = ? AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.posteam = ? AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
         GROUP BY p.passer_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY epa_per_play DESC
@@ -392,7 +392,7 @@ def get_team_rb_leaders(team: str, season: int, min_carries: int = 10):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.rusher_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.posteam = ? AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.posteam = ? AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
         GROUP BY p.rusher_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY epa_per_play DESC
@@ -412,7 +412,7 @@ def get_team_wr_leaders(team: str, season: int, min_targets: int = 10):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.receiver_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.posteam = ? AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.posteam = ? AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
         GROUP BY p.receiver_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY epa_per_play DESC
@@ -432,7 +432,7 @@ def get_team_qb_leaders_yards(team: str, season: int, min_dropbacks: int = 20):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.passer_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.posteam = ? AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.posteam = ? AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
         GROUP BY p.passer_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY yards DESC
@@ -452,7 +452,7 @@ def get_team_rb_leaders_yards(team: str, season: int, min_carries: int = 10):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.rusher_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.posteam = ? AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.posteam = ? AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
         GROUP BY p.rusher_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY yards DESC
@@ -472,7 +472,7 @@ def get_team_wr_leaders_yards(team: str, season: int, min_targets: int = 10):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.receiver_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.posteam = ? AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.posteam = ? AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
         GROUP BY p.receiver_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY yards DESC
@@ -1225,7 +1225,7 @@ def get_top_qb_season_yards(season: int, min_dropbacks: int = 100):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.passer_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
         GROUP BY p.passer_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY yards DESC
@@ -1245,7 +1245,7 @@ def get_top_rb_season_yards(season: int, min_carries: int = 50):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.rusher_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
         GROUP BY p.rusher_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY yards DESC
@@ -1265,7 +1265,7 @@ def get_top_wr_season_yards(season: int, min_targets: int = 30):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.receiver_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
         GROUP BY p.receiver_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY yards DESC
@@ -1305,7 +1305,7 @@ def get_top_qb_season_epa(season: int, min_dropbacks: int = 100):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.passer_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
         GROUP BY p.passer_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY epa_per_play DESC
@@ -1325,7 +1325,7 @@ def get_top_rb_season_epa(season: int, min_carries: int = 50):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.rusher_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
         GROUP BY p.rusher_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY epa_per_play DESC
@@ -1345,7 +1345,7 @@ def get_top_wr_season_epa(season: int, min_targets: int = 30):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.receiver_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
         GROUP BY p.receiver_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY epa_per_play DESC
@@ -1378,7 +1378,7 @@ def get_passing_leaderboard_season(season: int, min_attempts: int = 50):
                 MAX(p.passing_yards) AS lng
             FROM plays p
             LEFT JOIN rosters r ON p.passer_player_id = r.player_id AND r.season = p.season
-            WHERE p.season = ? AND p.pass = 1 AND p.passer_player_id IS NOT NULL
+            WHERE p.season = ? AND p.season_type = 'REG' AND p.pass = 1 AND p.passer_player_id IS NOT NULL
             GROUP BY p.passer_player_name, p.posteam
             HAVING COUNT(*) >= ?
         ),
@@ -1441,7 +1441,7 @@ def get_rushing_leaderboard_season(season: int, min_attempts: int = 30):
             SUM(p.fumble) AS fum
         FROM plays p
         LEFT JOIN rosters r ON p.rusher_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
         GROUP BY p.rusher_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY rush_yds DESC
@@ -1482,7 +1482,7 @@ def get_receiving_leaderboard_season(season: int, min_targets: int = 20):
             COUNT(*) AS tgts
         FROM plays p
         LEFT JOIN rosters r ON p.receiver_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
         GROUP BY p.receiver_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY yds DESC
@@ -1525,7 +1525,7 @@ def get_passing_leaderboard_epa_season(season: int, min_dropbacks: int = 100):
             SUM(CAST(p.sack AS DOUBLE)) AS sacks_subis
         FROM plays p
         LEFT JOIN rosters r ON p.passer_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.passer_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.passer_player_id IS NOT NULL
         GROUP BY p.passer_player_name, p.posteam
         HAVING COUNT(*) FILTER (WHERE p.qb_dropback = 1) >= ?
         ORDER BY epa_per_play DESC
@@ -1560,7 +1560,7 @@ def get_rushing_leaderboard_epa_season(season: int, min_attempts: int = 30):
             ROUND(AVG(p.epa) FILTER (WHERE p.rush = 1), 3) AS epa_per_play
         FROM plays p
         LEFT JOIN rosters r ON p.rusher_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.rusher_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.rusher_player_id IS NOT NULL
         GROUP BY p.rusher_player_name, p.posteam
         HAVING COUNT(*) FILTER (WHERE p.rush = 1) >= ?
         ORDER BY epa_per_play DESC
@@ -1594,7 +1594,7 @@ def get_receiving_leaderboard_epa_season(season: int, min_targets: int = 20):
             ROUND(AVG(p.yards_after_catch) FILTER (WHERE p.complete_pass = 1), 1) AS yac_moy
         FROM plays p
         LEFT JOIN rosters r ON p.receiver_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.receiver_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.receiver_player_id IS NOT NULL
         GROUP BY p.receiver_player_name, p.posteam
         HAVING COUNT(*) FILTER (WHERE p.pass = 1) >= ?
         ORDER BY epa_per_play DESC
@@ -1627,7 +1627,7 @@ def get_top_qb_week(season: int, week: int, min_dropbacks: int = 10):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.passer_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.week = ? AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.week = ? AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
         GROUP BY p.passer_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY epa_per_play DESC
@@ -1647,7 +1647,7 @@ def get_top_rb_week(season: int, week: int, min_carries: int = 5):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.rusher_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.week = ? AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.week = ? AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
         GROUP BY p.rusher_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY epa_per_play DESC
@@ -1667,7 +1667,7 @@ def get_top_wr_week(season: int, week: int, min_targets: int = 3):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.receiver_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.week = ? AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.week = ? AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
         GROUP BY p.receiver_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY epa_per_play DESC
@@ -2033,7 +2033,7 @@ def get_home_top_players(season: int, poste: str | None = None, limit: int = 5):
                SUM(p.passing_yards) AS yards, ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.passer_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
         GROUP BY p.passer_player_name, p.posteam
         HAVING COUNT(*) >= 100
     """
@@ -2043,7 +2043,7 @@ def get_home_top_players(season: int, poste: str | None = None, limit: int = 5):
                SUM(p.rushing_yards) AS yards, ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.rusher_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.rush = 1 AND p.rusher_player_id IS NOT NULL
         GROUP BY p.rusher_player_name, p.posteam
         HAVING COUNT(*) >= 50
     """
@@ -2053,7 +2053,7 @@ def get_home_top_players(season: int, poste: str | None = None, limit: int = 5):
                SUM(p.receiving_yards) AS yards, ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.receiver_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.pass = 1 AND p.receiver_player_id IS NOT NULL
         GROUP BY p.receiver_player_name, p.posteam
         HAVING COUNT(*) >= 30
     """
@@ -2159,7 +2159,7 @@ def get_season_success_rate_leader(season: int, min_dropbacks: int = 100):
                ANY_VALUE(r.headshot_url) AS photo_url
         FROM plays p
         LEFT JOIN rosters r ON p.passer_player_id = r.player_id AND r.season = p.season
-        WHERE p.season = ? AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
+        WHERE p.season = ? AND p.season_type = 'REG' AND p.qb_dropback = 1 AND p.passer_player_id IS NOT NULL
         GROUP BY p.passer_player_name, p.posteam
         HAVING COUNT(*) >= ?
         ORDER BY success_rate DESC
