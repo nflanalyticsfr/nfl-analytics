@@ -262,3 +262,92 @@ def generer_carte_equipe(team_name, season, team_color, logo_url, rang_off, epa_
     draw.text((3 * CANVAS_SIZE // 4, 890), f"{epa_def:.3f}", font=police_label, fill="white", anchor="mm")
 
     return img
+
+
+COULEURS_QUADRANT = {
+    "elite": (34, 197, 94),              # vert — attaque + défense fortes
+    "defense": (59, 130, 246),           # bleu — défense dominante
+    "attaque": (234, 88, 12),            # orange — attaque dominante
+    "reconstruction": (100, 116, 139),   # gris — reconstruction
+}
+POWER_TIERS_AXE_MIN, POWER_TIERS_AXE_MAX = -0.20, 0.20
+
+
+def generer_power_tiers_image(df_teams, season):
+    """df_teams : colonnes team, epa_offense, epa_defense, logo_url (issu
+    de get_team_epa_offense_defense + get_team_logos, comme sur
+    Analytics > Advanced Analytics PRO > Équipe).
+
+    Version statique carrée de l'idée du graphique Power Tiers interactif :
+    logos d'équipe positionnés par EPA attaque/défense, quadrants teintés.
+    Pensée pour Instagram, pas pour l'exploration — pas de hover, pas de
+    lignes de Net EPA (trop chargé à l'échelle d'un post), juste les 4
+    zones et les 32 logos. Axe Y inversé comme sur la version interactive :
+    plus haut = défense plus stingy (epa_defense plus négatif)."""
+    img = Image.new("RGB", (CANVAS_SIZE, CANVAS_SIZE), (15, 23, 42))
+
+    marge_haut, taille_graph = 190, 760
+    x0 = (CANVAS_SIZE - taille_graph) // 2
+    y0 = marge_haut
+    x1, y1 = x0 + taille_graph, y0 + taille_graph
+
+    def px_x(epa_off):
+        return x0 + (epa_off - POWER_TIERS_AXE_MIN) / (POWER_TIERS_AXE_MAX - POWER_TIERS_AXE_MIN) * taille_graph
+
+    def px_y(epa_def):
+        return y0 + (epa_def - POWER_TIERS_AXE_MIN) / (POWER_TIERS_AXE_MAX - POWER_TIERS_AXE_MIN) * taille_graph
+
+    zx, zy = px_x(0), px_y(0)
+
+    # Quadrants teintés — alpha faible pour rester lisible sous les logos
+    overlay = Image.new("RGBA", (CANVAS_SIZE, CANVAS_SIZE), (0, 0, 0, 0))
+    draw_overlay = ImageDraw.Draw(overlay)
+    alpha = 40
+    draw_overlay.rectangle([zx, y0, x1, zy], fill=COULEURS_QUADRANT["elite"] + (alpha,))
+    draw_overlay.rectangle([x0, y0, zx, zy], fill=COULEURS_QUADRANT["defense"] + (alpha,))
+    draw_overlay.rectangle([zx, zy, x1, y1], fill=COULEURS_QUADRANT["attaque"] + (alpha,))
+    draw_overlay.rectangle([x0, zy, zx, y1], fill=COULEURS_QUADRANT["reconstruction"] + (alpha,))
+    img = Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
+    draw = ImageDraw.Draw(img)
+
+    # Axes zéro + cadre
+    draw.line([(zx, y0), (zx, y1)], fill=(71, 85, 105), width=2)
+    draw.line([(x0, zy), (x1, zy)], fill=(71, 85, 105), width=2)
+    draw.rectangle([x0, y0, x1, y1], outline=(51, 65, 85), width=2)
+
+    # Étiquettes de quadrant
+    police_quadrant = _charger_police(20, gras=True)
+    draw.text(((zx + x1) / 2, y0 + 22), "ELITE", font=police_quadrant, fill="white", anchor="mm")
+    draw.text(((x0 + zx) / 2, y0 + 22), "DÉFENSE DOMINANTE", font=police_quadrant, fill="white", anchor="mm")
+    draw.text(((zx + x1) / 2, y1 - 22), "ATTAQUE DOMINANTE", font=police_quadrant, fill="white", anchor="mm")
+    draw.text(((x0 + zx) / 2, y1 - 22), "RECONSTRUCTION", font=police_quadrant, fill="white", anchor="mm")
+
+    # Logos d'équipe positionnés par EPA
+    taille_logo = 58
+    for _, row in df_teams.iterrows():
+        logo = _charger_image_url(row["logo_url"], (taille_logo, taille_logo))
+        if logo:
+            cx, cy = px_x(row["epa_offense"]), px_y(row["epa_defense"])
+            img.paste(logo, (int(cx - taille_logo / 2), int(cy - taille_logo / 2)), logo)
+
+    # Titre, sous-titre, étiquette d'axe X
+    police_titre = _charger_police(58, gras=True)
+    police_sous = _charger_police(28)
+    police_axe = _charger_police(20)
+    draw.text((CANVAS_SIZE // 2, 68), "NFL POWER TIERS", font=police_titre, fill="white", anchor="mm")
+    draw.text((CANVAS_SIZE // 2, 122), f"Saison {season} · EPA attaque vs défense",
+              font=police_sous, fill="#94A3B8", anchor="mm")
+    draw.text((CANVAS_SIZE // 2, y1 + 28), "EPA OFFENSIF →", font=police_axe, fill="#94A3B8", anchor="mm")
+
+    # Étiquette d'axe Y (verticale — dessinée à part puis pivotée)
+    label_y = Image.new("RGBA", (320, 40), (0, 0, 0, 0))
+    ImageDraw.Draw(label_y).text((160, 20), "EPA DÉFENSIF (haut = meilleure défense)",
+                                  font=police_axe, fill="#94A3B8", anchor="mm")
+    label_y = label_y.rotate(90, expand=True)
+    img.paste(label_y, (18, int((y0 + y1) / 2 - label_y.height / 2)), label_y)
+
+    police_watermark = _charger_police(22, gras=True)
+    draw.text((CANVAS_SIZE // 2, CANVAS_SIZE - 26), "NFL ANALYTICS FR",
+              font=police_watermark, fill="#EA580C", anchor="mm")
+
+    return img

@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from queries import (
     get_available_seasons, get_weeks_for_season, get_all_teams, get_team_colors, get_team_logos,
-    get_team_weekly_movement,
+    get_team_weekly_movement, get_team_epa_offense_defense,
     get_player_weekly_movement, get_player_bio,
     get_top_qb_season_yards, get_top_rb_season_yards, get_top_wr_season_yards,
     get_top_qb_season_epa, get_top_rb_season_epa, get_top_wr_season_epa,
@@ -15,7 +15,10 @@ from queries import (
     get_social_top_qb_week, get_social_top_rb_week, get_social_top_wr_week,
     get_social_best_offense_week, get_social_best_defense_week, render_global_search,
 )
-from social_cards import generer_carte_joueur, generer_carte_equipe, generer_podium_image, _formatter_valeur
+from social_cards import (
+    generer_carte_joueur, generer_carte_equipe, generer_podium_image,
+    generer_power_tiers_image, _formatter_valeur,
+)
 from styles import PAGE_FONT_CSS
 
 st.set_page_config(page_title="Cartes sociales", layout="wide")
@@ -24,7 +27,7 @@ render_global_search()
 st.title("Générateur de visuels — Instagram")
 st.caption("Génère un visuel carré (1080×1080), avec rang et évolution vs semaine précédente.")
 
-type_carte = st.radio("Type de carte", ["Joueur", "Équipe", "Podium"], horizontal=True, key="type_carte_select")
+type_carte = st.radio("Type de carte", ["Joueur", "Équipe", "Podium", "Power Tiers"], horizontal=True, key="type_carte_select")
 
 seasons = get_available_seasons()
 colors = get_team_colors()
@@ -129,7 +132,7 @@ elif type_carte == "Équipe":
 # ─────────────────────────────────────────────────────────────
 # Podium
 # ─────────────────────────────────────────────────────────────
-else:
+elif type_carte == "Podium":
     season = st.selectbox("Saison", seasons, index=len(seasons) - 1, key="podium_season")
     portee = st.radio("Portée", ["Semaine", "Saison"], horizontal=True, key="podium_portee")
 
@@ -194,3 +197,24 @@ else:
             file_name=f"podium_{nom_categorie.replace(' ', '_').replace('—', '')}_{season}.png",
             mime="image/png", key="dl_podium",
         )
+
+# ─────────────────────────────────────────────────────────────
+# Power Tiers — équivalent statique du graphique Analytics > PRO > Équipe
+# ─────────────────────────────────────────────────────────────
+else:
+    season = st.selectbox("Saison", seasons, index=len(seasons) - 1, key="power_tiers_season")
+
+    df_teams = get_team_epa_offense_defense(season)
+    df_teams["logo_url"] = df_teams["team"].map(logos)
+
+    if df_teams.empty:
+        st.warning("Aucune donnée disponible pour cette saison.")
+        st.stop()
+
+    if st.button("Générer le visuel", key="generer_power_tiers"):
+        img = generer_power_tiers_image(df_teams, season)
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        st.image(img, width=400)
+        st.download_button("Télécharger le PNG", buffer.getvalue(),
+                            file_name=f"power_tiers_{season}.png", mime="image/png", key="dl_power_tiers")

@@ -11,6 +11,26 @@ python scripts/load_duckdb.py
 python scripts/validate_epa.py
 ```
 
+## Automatisation
+
+Depuis `.github/workflows/update_data.yml`, ce pipeline tourne automatiquement
+les vendredis, lundis et mardis à 13h00 UTC (9h ET) — lendemains des matchs
+du jeudi, dimanche et lundi respectivement. Pas de run les autres jours :
+Git LFS stocke une copie complète de la base à chaque push (pas de diff
+binaire), donc pousser sans nouveau match ne ferait que consommer du quota
+LFS pour rien. Déclenchement manuel possible à tout moment depuis l'onglet
+**Actions** du repo GitHub (bouton "Run workflow") — utile pour les rares
+matchs du samedi en fin de saison, non couverts par le cron.
+
+Le workflow exécute les 4 premières étapes ci-dessus dans l'ordre, puis
+`scripts/validate_pipeline.py` — pas `validate_epa.py` : celui-ci fait de
+vraies assertions et sort en erreur si un contrôle échoue (table vide,
+colonne critique cassée, EPA hors plage plausible). Si la validation
+échoue, le job s'arrête là : `database/nfl.duckdb` n'est ni commité ni
+poussé, la version en production (celle de la veille) reste inchangée.
+Si elle passe, la base est commitée et poussée — ce qui déclenche le
+redéploiement automatique sur Streamlit Cloud (qui surveille le repo).
+
 ## Détail de chaque étape
 
 1. **fetch_static.py** — télécharge `games` (calendrier, scores), `players`
@@ -40,9 +60,11 @@ l'audit (`fetch_plays.py` et `fetch_static.py` s'étaient arrêtés à 2025
 pendant que `fetch_rosters.py` allait déjà jusqu'à 2026 — chacun avait
 son propre `range()` codé en dur, jamais mis à jour ensemble).
 
-## Scripts de diagnostic (`check_*.py`, `validate_*.py`)
+## Scripts de diagnostic (`check_*.py`, `validate_source.py`, `validate_epa.py`)
 
-Pas partie du pipeline régulier — utilisés ponctuellement pendant le
+Pas partie du pipeline automatisé — utilisés ponctuellement pendant le
 développement pour vérifier une hypothèse sur les données (colonnes
 disponibles, couleurs d'équipe, cohérence des logos...). Peuvent être
-ignorés en usage normal.
+ignorés en usage normal. `validate_pipeline.py` est différent : c'est la
+porte de sécurité du workflow d'ingestion (voir plus haut), pas un script
+de diagnostic manuel.

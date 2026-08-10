@@ -21,8 +21,8 @@ st.title("Analytics")
 # ═══════════════════════════════════════════════════════════════════════
 # CONSTANTES — quadrant EPA équipe (onglet PRO)
 # ═══════════════════════════════════════════════════════════════════════
-AXE_MIN = -0.220
-AXE_MAX = 0.220
+AXE_MIN = -0.20
+AXE_MAX = 0.20
 LOGO_SIZE = 0.022
 FIGURE_HEIGHT = 700
 
@@ -44,41 +44,13 @@ def add_quadrant_background(fig):
 
 
 def add_net_epa_lines(fig):
-
-    """
-    Ajoute les diagonales de Net EPA.
-
-    Net EPA = EPA attaque - EPA défense.
-
-    Les diagonales sont fixes afin de permettre
-    la comparaison entre les saisons.
-    """
-
-    levels = [
-        -0.15,
-        -0.10,
-        -0.05,
-        0,
-        0.05,
-        0.10,
-        0.15,
-    ]
-
-    for level in levels:
-
+    """Diagonales de Net EPA (attaque - défense), fixes pour comparaison entre saisons."""
+    for level in [-0.15, -0.10, -0.05, 0, 0.05, 0.10, 0.15]:
         fig.add_shape(
-            type="line",
-            x0=AXE_MIN,
-            y0=AXE_MIN - level,
-            x1=AXE_MAX,
-            y1=AXE_MAX - level,
-            line=dict(
-                color="lightgray",
-                width=1,
-                dash="dot",
-            ),
-            layer="below",
+            type="line", x0=AXE_MIN, y0=AXE_MIN - level, x1=AXE_MAX, y1=AXE_MAX - level,
+            line=dict(color="lightgray", width=1, dash="dot"), layer="below",
         )
+        fig.add_annotation(x=0.18, y=0.18 - level, text=f"Net {level:+.2f}", showarrow=False, font=dict(size=10))
 
 
 def add_quadrant_labels(fig):

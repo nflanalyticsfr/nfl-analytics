@@ -14,7 +14,7 @@ scripts soient synchronisés.
 """
 
 FIRST_SEASON = 2015
-CURRENT_SEASON = 2025
+CURRENT_SEASON = 2026
 
 # Équipe pré-sélectionnée sur la page Teams quand aucune n'est indiquée
 # dans l'URL (?team=...).

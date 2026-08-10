@@ -1,0 +1,61 @@
+name: Mise à jour des données
+
+on:
+  schedule:
+    # Vendredi (lendemain du Thursday Night Football), lundi (lendemain des
+    # matchs du dimanche), mardi (lendemain du Monday Night Football).
+    # Pas de run quotidien — Git LFS stocke une copie complète du fichier à
+    # chaque push (pas de diff binaire), donc on limite aux jours qui
+    # suivent réellement des matchs plutôt que de pousser pour rien les
+    # autres jours. Limite connue : les matchs du samedi (fin de saison,
+    # semaines 16-18) ne sont récupérés qu'au run du lundi suivant — si
+    # besoin d'une donnée plus fraîche ce jour-là, déclenchement manuel
+    # depuis l'onglet Actions.
+    - cron: "0 13 * * 1,2,5"
+  workflow_dispatch: {}  # permet un déclenchement manuel depuis l'onglet Actions
+
+permissions:
+  contents: write  # nécessaire pour que le job puisse commit + push
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout du repo (avec LFS)
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Installer Git LFS
+        run: git lfs install
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Pipeline d'ingestion (voir scripts/README.md pour le détail)
+        run: |
+          python scripts/fetch_static.py
+          python scripts/fetch_rosters.py
+          python scripts/fetch_plays.py
+          python scripts/load_duckdb.py
+
+      - name: Validation automatique (porte de sécurité)
+        run: python scripts/validate_pipeline.py
+
+      - name: Commit et push si la base a changé
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add database/nfl.duckdb
+          if git diff --cached --quiet; then
+            echo "Aucun changement dans la base — rien à committer."
+          else
+            git commit -m "Mise à jour des données ($(date -u +%F))"
+            git push
+          fi
