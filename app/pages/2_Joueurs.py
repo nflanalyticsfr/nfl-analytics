@@ -225,7 +225,7 @@ with onglet_overview:
         ))
         fig_def.update_layout(xaxis_title="Semaine", yaxis_title="Actions défensives", height=400)
         fig_def.update_xaxes(dtick=1)
-        st.plotly_chart(fig_def, use_container_width=True, key=f"defense_trend_{player_id}_{season}")
+        st.plotly_chart(fig_def, width='stretch', key=f"defense_trend_{player_id}_{season}")
 
     if not a_passing and not a_rushing and not a_receiving and not a_defense:
         st.info("Aucune statistique disponible pour ce joueur sur cette saison.")
@@ -296,6 +296,6 @@ with onglet_avance:
         fig.add_hline(y=0, line_dash="dash", line_color="gray")
         fig.update_layout(xaxis_title="Semaine", yaxis_title="EPA par play", height=400)
         fig.update_xaxes(dtick=1)
-        st.plotly_chart(fig, use_container_width=True, key=f"epa_trend_{player_id}_{season}")
+        st.plotly_chart(fig, width='stretch', key=f"epa_trend_{player_id}_{season}")
     else:
         st.info("Aucune donnée EPA hebdomadaire disponible.")

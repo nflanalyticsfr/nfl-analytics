@@ -221,4 +221,4 @@ with onglet_avance:
     fig.add_hline(y=0, line_dash="dash", line_color="gray")
     fig.update_layout(xaxis_title="Semaine", yaxis_title="EPA par play", height=400)
     fig.update_xaxes(dtick=1)
-    st.plotly_chart(fig, use_container_width=True, key=f"epa_trend_team_{team_abbr}_{season}")
+    st.plotly_chart(fig, width='stretch', key=f"epa_trend_team_{team_abbr}_{season}")

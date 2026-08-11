@@ -65,5 +65,5 @@ fig.add_hline(y=0, line_dash="dash", line_color="gray")
 fig.update_layout(xaxis_title="Saison", yaxis_title="EPA par play", height=600)
 fig.update_xaxes(dtick=1)
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width='stretch')
 render_table(style_dataframe(df))

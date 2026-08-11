@@ -154,7 +154,7 @@ def afficher_leaderboard(df, colonnes_entieres, colonnes_decimales):
 
     st.dataframe(
         df, column_config=configuration, column_order=ordre_colonnes,
-        hide_index=True, use_container_width=True, height=650,
+        hide_index=True, width='stretch', height=650,
     )
 
 
@@ -238,7 +238,7 @@ with onglet_avance:
         df_team["logo_url"] = df_team["team"].map(logos)
 
         fig = build_team_chart(df_team)
-        st.plotly_chart(fig, use_container_width=True, key=f"power_tiers_{season}")
+        st.plotly_chart(fig, width='stretch', key=f"power_tiers_{season}")
 
         st.subheader("Détails équipes")
         render_table(style_dataframe(df_team.drop(columns=["logo_url"])))

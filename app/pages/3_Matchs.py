@@ -178,7 +178,7 @@ with onglet_resume:
             yaxis_title=f"Écart ({info['home_team']} positif)",
             height=350,
         )
-        st.plotly_chart(fig_score, use_container_width=True, key=f"score_{game_id}")
+        st.plotly_chart(fig_score, width='stretch', key=f"score_{game_id}")
     else:
         st.info("Données de score indisponibles pour ce match.")
 
@@ -226,7 +226,7 @@ with onglet_analyse:
             xaxis_title="Progression du match", yaxis_title=f"Probabilité de victoire — {info['home_team']} (%)",
             yaxis_range=[0, 100], height=350,
         )
-        st.plotly_chart(fig_wp, use_container_width=True, key=f"wp_{game_id}")
+        st.plotly_chart(fig_wp, width='stretch', key=f"wp_{game_id}")
     else:
         st.info("Données de win probability indisponibles pour ce match.")
 
@@ -245,6 +245,6 @@ with onglet_analyse:
             ))
         fig_epa.add_hline(y=0, line_dash="dash", line_color="gray")
         fig_epa.update_layout(xaxis_title="Progression du match", yaxis_title="EPA cumulé", height=350)
-        st.plotly_chart(fig_epa, use_container_width=True, key=f"epa_{game_id}")
+        st.plotly_chart(fig_epa, width='stretch', key=f"epa_{game_id}")
     else:
         st.info("Données EPA indisponibles pour ce match.")
