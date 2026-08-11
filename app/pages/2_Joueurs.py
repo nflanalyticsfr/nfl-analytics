@@ -35,20 +35,34 @@ season = st.selectbox("Saison", seasons, index=index_season, key="player_season"
 
 joueurs = get_player_search_list(season)
 
-col_team, col_search = st.columns([1, 2])
-with col_team:
-    equipes_dispo = ["Toutes"] + sorted(joueurs["team"].dropna().unique().tolist())
-    filtre_equipe = st.selectbox("Filtrer par équipe", equipes_dispo, key="player_team_filter")
-
-joueurs_equipe = joueurs if filtre_equipe == "Toutes" else joueurs[joueurs["team"] == filtre_equipe]
+col_search, col_team, col_raz = st.columns([2, 1, 1])
 
 with col_search:
     recherche = st.text_input("Rechercher un joueur", placeholder="Ex : Mahomes", key="player_search_box")
 
-if recherche:
-    joueurs_filtres = joueurs_equipe[joueurs_equipe["player_name"].str.contains(recherche, case=False, na=False)]
-else:
-    joueurs_filtres = joueurs_equipe
+# La recherche filtre d'abord — les options du filtre équipe reflètent
+# ensuite seulement les équipes des joueurs trouvés, pas la liste complète
+# (sinon chercher "watt" laissait un filtre équipe avec les 32 équipes,
+# alors que 3-4 seulement ont un joueur nommé Watt).
+joueurs_recherche = (
+    joueurs[joueurs["player_name"].str.contains(recherche, case=False, na=False)]
+    if recherche else joueurs
+)
+
+with col_team:
+    equipes_dispo = ["Toutes"] + sorted(joueurs_recherche["team"].dropna().unique().tolist())
+    filtre_equipe = st.selectbox("Filtrer par équipe", equipes_dispo, key="player_team_filter")
+
+with col_raz:
+    st.write("")
+    if st.button("Réinitialiser les filtres", key="reset_player_filters"):
+        for cle in ["player_search_box", "player_team_filter", "player_select"]:
+            st.session_state.pop(cle, None)
+        st.rerun()
+
+joueurs_filtres = (
+    joueurs_recherche if filtre_equipe == "Toutes" else joueurs_recherche[joueurs_recherche["team"] == filtre_equipe]
+)
 
 if joueurs_filtres.empty:
     st.warning("Aucun joueur trouvé pour ce filtre.")

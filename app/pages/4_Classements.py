@@ -134,6 +134,8 @@ with onglet_avance:
         with col2:
             st.write("**QB — EPA/Dropback**")
             render_ranking_with_movement(get_player_weekly_movement(selected_season, week, "passing"), value_col="epa_per_play", is_player=True, season=selected_season)
+
+        st.write("")
         col3, col4 = st.columns(2)
         with col3:
             st.write("**RB — EPA/Course**")

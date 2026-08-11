@@ -920,6 +920,75 @@ def get_def_full_rankings(season: int, min_actions: int = 10):
     return df
 
 @st.cache_data(ttl=3600)
+def get_defense_leaderboard_season(season: int, min_actions: int = 10):
+    """Leaderboard IDP (Individual Defensive Players) complet, saison
+    entière — nom/équipe/photo en plus des colonnes déjà calculées par
+    get_def_full_rankings (même structure UNION ALL, voir sa docstring
+    pour le détail du schéma dénormalisé). Utilisé sur Analytics >
+    Overview > IDP."""
+    con = get_connection()
+    colonnes = [
+        ("solo_tackle_1_player_id", "tacles", 1), ("solo_tackle_2_player_id", "tacles", 1),
+        ("assist_tackle_1_player_id", "tacles", 1), ("assist_tackle_2_player_id", "tacles", 1),
+        ("assist_tackle_3_player_id", "tacles", 1), ("assist_tackle_4_player_id", "tacles", 1),
+        ("tackle_for_loss_1_player_id", "tfl", 1), ("tackle_for_loss_2_player_id", "tfl", 1),
+        ("sack_player_id", "sacks", 1),
+        ("half_sack_1_player_id", "sacks", 0.5), ("half_sack_2_player_id", "sacks", 0.5),
+        ("qb_hit_1_player_id", "pressions", 1), ("qb_hit_2_player_id", "pressions", 1),
+        ("interception_player_id", "interceptions", 1),
+        ("pass_defense_1_player_id", "pd", 1), ("pass_defense_2_player_id", "pd", 1),
+        ("forced_fumble_player_1_player_id", "ff", 1), ("forced_fumble_player_2_player_id", "ff", 1),
+    ]
+    branches = " UNION ALL ".join(
+        f"SELECT {col} AS player_id, '{cat}' AS categorie, {poids} AS poids "
+        f"FROM plays WHERE season = ? AND {col} IS NOT NULL"
+        for col, cat, poids in colonnes
+    )
+    query = f"""
+        WITH actions AS ({branches}),
+        agrege AS (
+            SELECT player_id,
+                   SUM(poids) FILTER (WHERE categorie = 'tacles') AS tacles_totaux,
+                   SUM(poids) FILTER (WHERE categorie = 'tfl') AS tacles_pour_perte,
+                   SUM(poids) FILTER (WHERE categorie = 'sacks') AS sacks_totaux,
+                   SUM(poids) FILTER (WHERE categorie = 'pressions') AS pressions_qb,
+                   SUM(poids) FILTER (WHERE categorie = 'interceptions') AS interceptions,
+                   SUM(poids) FILTER (WHERE categorie = 'pd') AS passes_defendues,
+                   SUM(poids) FILTER (WHERE categorie = 'ff') AS fumbles_forces,
+                   SUM(poids) AS volume_total
+            FROM actions
+            GROUP BY player_id
+            HAVING SUM(poids) >= ?
+        )
+        SELECT a.player_id, ANY_VALUE(r.player_name) AS player, ANY_VALUE(r.team) AS team,
+               ANY_VALUE(r.position) AS position, ANY_VALUE(r.headshot_url) AS photo_url,
+               ANY_VALUE(a.tacles_totaux) AS tacles_totaux, ANY_VALUE(a.tacles_pour_perte) AS tacles_pour_perte,
+               ANY_VALUE(a.sacks_totaux) AS sacks_totaux, ANY_VALUE(a.pressions_qb) AS pressions_qb,
+               ANY_VALUE(a.interceptions) AS interceptions, ANY_VALUE(a.passes_defendues) AS passes_defendues,
+               ANY_VALUE(a.fumbles_forces) AS fumbles_forces
+        FROM agrege a
+        LEFT JOIN rosters r ON a.player_id = r.player_id AND r.season = ?
+        GROUP BY a.player_id
+    """
+    params = [season] * len(colonnes) + [min_actions, season]
+    df = con.execute(query, params).fetchdf()
+    if df.empty:
+        return df
+
+    for col in ["tacles_totaux", "tacles_pour_perte", "sacks_totaux", "pressions_qb",
+                "interceptions", "passes_defendues", "fumbles_forces"]:
+        df[col] = df[col].fillna(0)
+
+    df = df.rename(columns={
+        "player": "Player", "position": "Poste", "tacles_totaux": "Tacles", "tacles_pour_perte": "TFL",
+        "sacks_totaux": "Sacks", "pressions_qb": "Pressions", "interceptions": "INT",
+        "passes_defendues": "PD", "fumbles_forces": "FF",
+    })
+    colonnes_finales = ["player_id", "photo_url", "Player", "team", "Poste",
+                         "Tacles", "TFL", "Sacks", "Pressions", "INT", "PD", "FF"]
+    return df[colonnes_finales].sort_values("Tacles", ascending=False).reset_index(drop=True)
+
+@st.cache_data(ttl=3600)
 def get_rank_label(df_rankings, player_id: str, metric_col: str, ascending: bool = False):
     """Retourne '#3 / 24' si le joueur est qualifié pour ce classement,
     None sinon (échantillon trop petit ou stat non applicable).

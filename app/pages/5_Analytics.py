@@ -9,7 +9,7 @@ from queries import (
     style_dataframe, render_table,
     get_passing_leaderboard_season, get_rushing_leaderboard_season, get_receiving_leaderboard_season,
     get_passing_leaderboard_epa_season, get_rushing_leaderboard_epa_season, get_receiving_leaderboard_epa_season,
-    render_global_search,
+    get_defense_leaderboard_season, render_global_search,
 )
 from styles import PAGE_FONT_CSS
 
@@ -187,7 +187,7 @@ onglet_overview, onglet_avance = st.tabs(["Overview", "Advanced Analytics ⭐ PR
 with onglet_overview:
     st.caption("Classements saison complète avec filtres de volume minimum.")
 
-    pass_tab, rush_tab, rec_tab = st.tabs(["Passe", "Course", "Réception"])
+    pass_tab, rush_tab, rec_tab, idp_tab = st.tabs(["Passe", "Course", "Réception", "IDP"])
 
     with pass_tab:
         st.subheader("Passeurs — saison complète")
@@ -217,6 +217,17 @@ with onglet_overview:
             df[df["Cibles"] >= minimum],
             colonnes_entieres=["Rec", "Yds", "TD", "20+", "40+", "LNG", "Rec 1st", "Rec FUM", "Cibles"],
             colonnes_decimales=["1st%", "Rec YAC/R"],
+        )
+
+    with idp_tab:
+        st.subheader("IDP (Individual Defensive Players) — saison complète")
+        st.caption("Tacles, TFL, sacks, pressions, INT, passes défendues, fumbles forcés — toutes positions défensives confondues.")
+        minimum = st.number_input("Actions défensives minimum", min_value=0, value=10, step=5, key="ov_min_idp")
+        df = get_defense_leaderboard_season(season)
+        afficher_leaderboard(
+            df[df["Tacles"] + df["TFL"] + df["Sacks"] + df["Pressions"] + df["INT"] + df["PD"] + df["FF"] >= minimum] if not df.empty else df,
+            colonnes_entieres=["Tacles", "TFL", "Sacks", "Pressions", "INT", "PD", "FF"],
+            colonnes_decimales=[],
         )
 
 # ═══════════════════════════════════════════════════════════════════════

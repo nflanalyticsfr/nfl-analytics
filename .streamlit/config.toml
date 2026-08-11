@@ -15,6 +15,11 @@ port = 8501
 [client]
 # Caching activé pour de meilleures performances
 caching = true
+# "minimal" masque le menu Streamlit natif (Rerun, Settings, Print, Report
+# a bug...) pour les visiteurs. N'affecte PAS la barre Share/étoile/GitHub
+# de Streamlit Community Cloud tout en haut — celle-ci fait partie du
+# produit d'hébergement lui-même, aucun réglage app-side ne la retire.
+toolbarMode = "minimal"
 
 [logger]
 # Niveau de log
