@@ -2481,7 +2481,7 @@ def render_podium(df, metric_col, decimals=3, season=None):
     season : saison à laquelle appartiennent ces données, transmise au lien
     joueur pour que la page Players se présélectionne sur la bonne saison.
     """
-    if df.empty:
+    if df is None or df.empty:
         st.info("Aucune donnée disponible.")
         return
 
@@ -2561,7 +2561,7 @@ def render_team_podium(df, metric_col, decimals=0):
     logo d'équipe en grand format au centre de l'avatar, nom de l'équipe
     en dessous. Même structure visuelle que render_podium, adaptée aux
     entités équipe."""
-    if df.empty:
+    if df is None or df.empty:
         st.info("Aucune donnée disponible.")
         return
 
@@ -2628,7 +2628,7 @@ def render_team_podium(df, metric_col, decimals=0):
 
 def render_top_teams_list(df, metric_col="epa_offense", decimals=3):
     """Affiche un classement d'équipes sous forme de liste HTML compacte (logo, valeur), utilisé sur Home."""
-    if df.empty:
+    if df is None or df.empty:
         st.info("Aucune donnée disponible.")
         return
 
@@ -2661,7 +2661,7 @@ def render_top_teams_list(df, metric_col="epa_offense", decimals=3):
 
 def render_top_players_list(df):
     """Affiche un classement de joueurs sous forme de liste HTML compacte (photo, poste, yards), utilisé sur Home."""
-    if df.empty:
+    if df is None or df.empty:
         st.info("Aucune donnée disponible.")
         return
 
@@ -2715,7 +2715,7 @@ def render_top_players_list(df):
 
 def render_recent_games_list(df):
     """Affiche les derniers matchs sous forme de liste HTML compacte (logos, score), utilisé sur Home."""
-    if df.empty:
+    if df is None or df.empty:
         st.info("Aucun match disponible.")
         return
 
@@ -2758,7 +2758,7 @@ def render_game_performers(performers: list, couleur_equipe: str, season=None):
     sur la page Players."""
     rows_html = ""
     for label, df in performers:
-        if df.empty:
+        if df is None or df.empty:
             continue
         row = df.iloc[0]
         photo = row.get("photo_url")
@@ -2817,7 +2817,7 @@ def render_ranking_with_movement(df, value_col, decimals=3, is_player=False, sea
 
     season : transmis au lien joueur (quand is_player=True) pour que la page
     Players se présélectionne sur la bonne saison."""
-    if df.empty:
+    if df is None or df.empty:
         st.info("Aucune donnée disponible.")
         return
 
