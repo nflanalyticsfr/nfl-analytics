@@ -6,6 +6,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from queries import (
     get_all_teams, get_seasons_for_team, get_team_colors, get_team_logos,
     get_team_epa_offense_defense, get_team_epa_by_week, get_all_teams_records, get_team_schedule,
+    get_latest_season_with_games,
     get_team_qb_leaders, get_team_rb_leaders, get_team_wr_leaders, get_team_defensive_summary,
     get_team_qb_leaders_yards, get_team_rb_leaders_yards, get_team_wr_leaders_yards,
     get_all_teams_defensive_summary, get_team_rank_label,
@@ -91,9 +92,19 @@ onglet_overview, onglet_avance = st.tabs(["Overview", "Advanced Analytics ⭐ PR
 with onglet_overview:
 
     # ─── Derniers et prochains matchs ───
+    # "Prochains matchs" ne dépend pas de `season` (la saison choisie en haut
+    # de page pour parcourir les stats historiques) — un vrai calendrier
+    # d'équipe reste le même qu'on soit en train de consulter 2023 ou 2026.
+    # Toujours calculé sur la saison la plus récente présente dans games.
     schedule = get_team_schedule(team_abbr, season)
     derniers = schedule[schedule["joue"]].tail(5).sort_values("week", ascending=False)
-    prochains = schedule[~schedule["joue"]].sort_values("week")
+
+    saison_calendrier = get_latest_season_with_games()
+    if saison_calendrier == season:
+        schedule_futur = schedule
+    else:
+        schedule_futur = get_team_schedule(team_abbr, saison_calendrier)
+    prochains = schedule_futur[~schedule_futur["joue"]].sort_values("week")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -107,7 +118,10 @@ with onglet_overview:
                 st.write(f"S{row['week']} — {resultat} {lieu} {row['opponent']} · {int(row['team_score'])}-{int(row['opp_score'])}")
 
     with col2:
-        st.subheader(f"Prochains matchs ({len(prochains)})" if not prochains.empty else "Prochains matchs")
+        titre = f"Prochains matchs ({len(prochains)})" if not prochains.empty else "Prochains matchs"
+        if saison_calendrier != season:
+            titre += f" — Saison {saison_calendrier}"
+        st.subheader(titre)
         if prochains.empty:
             st.info("Aucun match à venir programmé.")
         else:

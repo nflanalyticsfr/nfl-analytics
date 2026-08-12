@@ -291,6 +291,18 @@ def get_team_schedule(team: str, season: int):
     return df
 
 @st.cache_data(ttl=3600)
+def get_latest_season_with_games():
+    """Saison la plus récente présente dans la table games (calendrier,
+    pas play-by-play) — contrairement à get_available_seasons() qui lit
+    plays et n'inclut donc pas la saison courante avant son premier match
+    joué. Sert à afficher 'Prochains matchs' indépendamment de la saison
+    sélectionnée par l'utilisateur ailleurs sur la page Équipes : le
+    calendrier d'une équipe ne devrait pas dépendre de quelle saison
+    historique on est en train de consulter pour ses stats."""
+    con = get_connection()
+    return con.execute("SELECT MAX(season) FROM games").fetchone()[0]
+
+@st.cache_data(ttl=3600)
 def get_team_defensive_summary(team: str, season: int):
     """Résumé défensif au niveau équipe. Pas de détail par joueur :
     sack_player_id et les colonnes de tackle ne sont pas dans le schéma."""
