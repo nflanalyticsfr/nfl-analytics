@@ -93,7 +93,7 @@ with onglet_overview:
     # ─── Derniers et prochains matchs ───
     schedule = get_team_schedule(team_abbr, season)
     derniers = schedule[schedule["joue"]].tail(5).sort_values("week", ascending=False)
-    prochains = schedule[~schedule["joue"]].head(5)
+    prochains = schedule[~schedule["joue"]].sort_values("week")
 
     col1, col2 = st.columns(2)
     with col1:
@@ -107,7 +107,7 @@ with onglet_overview:
                 st.write(f"S{row['week']} — {resultat} {lieu} {row['opponent']} · {int(row['team_score'])}-{int(row['opp_score'])}")
 
     with col2:
-        st.subheader("Prochains matchs")
+        st.subheader(f"Prochains matchs ({len(prochains)})" if not prochains.empty else "Prochains matchs")
         if prochains.empty:
             st.info("Aucun match à venir programmé.")
         else:

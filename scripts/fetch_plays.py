@@ -77,6 +77,23 @@ def fetch_season(season: int) -> tuple[int, str, Exception | None]:
         print(f"Téléchargement saison {season}...")
         df = nfl.import_pbp_data([season])
 
+        # Avant le coup d'envoi d'une saison (ou si nflverse n'a pas encore
+        # publié), l'API renvoie un DataFrame vide (0 ligne, 0 colonne). Le
+        # sauvegarder en parquet produit un fichier sans schéma, qui fait
+        # planter load_duckdb.py : read_parquet(..., union_by_name=true) ne
+        # sait pas fusionner un fichier sans aucune colonne avec les autres.
+        # On saute simplement l'écriture — cette saison sera absente du
+        # dossier data/seasons/ et donc ignorée par load_duckdb.py jusqu'à
+        # ce qu'un prochain run la trouve réellement disponible.
+        if df.empty:
+            message = (
+                f"  Aucune donnée disponible pour {season} (saison pas encore "
+                f"commencée, ou pas encore publiée par nflverse) — fichier "
+                f"parquet non créé pour cette saison."
+            )
+            print(message)
+            return (season, message, None)
+
         presentes = [c for c in COLONNES_PLAYS if c in df.columns]
         absentes = [c for c in COLONNES_PLAYS if c not in df.columns]
         if absentes:
