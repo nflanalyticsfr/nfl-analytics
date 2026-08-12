@@ -33,12 +33,18 @@ season_cible = int(season_cible) if season_cible and season_cible.isdigit() else
 index_season = seasons.index(season_cible) if season_cible in seasons else len(seasons) - 1
 season = st.selectbox("Saison", seasons, index=index_season, key="player_season")
 
+if "player_filters_reset" not in st.session_state:
+    st.session_state["player_filters_reset"] = 0
+suffixe_reset = st.session_state["player_filters_reset"]
+
 joueurs = get_player_search_list(season)
 
 col_search, col_team, col_raz = st.columns([2, 1, 1])
 
 with col_search:
-    recherche = st.text_input("Rechercher un joueur", placeholder="Ex : Mahomes", key="player_search_box")
+    recherche = st.text_input(
+        "Rechercher un joueur", placeholder="Ex : Mahomes", key=f"player_search_box_{suffixe_reset}"
+    )
 
 # La recherche filtre d'abord — les options du filtre équipe reflètent
 # ensuite seulement les équipes des joueurs trouvés, pas la liste complète
@@ -51,13 +57,17 @@ joueurs_recherche = (
 
 with col_team:
     equipes_dispo = ["Toutes"] + sorted(joueurs_recherche["team"].dropna().unique().tolist())
-    filtre_equipe = st.selectbox("Filtrer par équipe", equipes_dispo, key="player_team_filter")
+    filtre_equipe = st.selectbox(
+        "Filtrer par équipe", equipes_dispo, key=f"player_team_filter_{suffixe_reset}"
+    )
 
 with col_raz:
     st.write("")
     if st.button("Réinitialiser les filtres", key="reset_player_filters"):
-        for cle in ["player_search_box", "player_team_filter", "player_select"]:
-            st.session_state.pop(cle, None)
+        # Changer la clé des widgets (plutôt que vider leur session_state)
+        # force Streamlit à les recréer à neuf — vider juste la clé ne
+        # garantit pas toujours que text_input se réaffiche vide.
+        st.session_state["player_filters_reset"] += 1
         st.rerun()
 
 joueurs_filtres = (
