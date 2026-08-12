@@ -277,7 +277,7 @@ def get_team_schedule(team: str, season: int):
     con = get_connection()
     query = """
         SELECT
-            week, gameday,
+            game_id, week, gameday,
             CASE WHEN home_team = ? THEN away_team ELSE home_team END AS opponent,
             CASE WHEN home_team = ? THEN TRUE ELSE FALSE END AS domicile,
             CASE WHEN home_team = ? THEN home_score ELSE away_score END AS team_score,
@@ -2346,6 +2346,14 @@ def render_page_link(icon, label, slug):
     contenu = f'<span class="text-link">{icon} {label} →</span>'
     html = f'<a {_attrs_lien(slug)} class="text-link-wrap">{contenu}</a>'
     st.markdown(_aplatir_html(html), unsafe_allow_html=True)
+
+
+def render_matchup_line(contenu_texte, game_id):
+    """Une ligne de calendrier cliquable (ex. 'S5 — V @ NE · 24-17'),
+    menant vers la fiche du match. Version publique de _lien_match pour
+    les pages qui veulent juste une ligne de texte cliquable sans
+    construire du HTML personnalisé."""
+    st.markdown(_aplatir_html(_lien_match(contenu_texte, game_id)), unsafe_allow_html=True)
 
 
 # ──────────────────────────────────────────────────────────────────────────────

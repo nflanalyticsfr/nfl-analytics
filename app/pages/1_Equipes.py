@@ -6,7 +6,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from queries import (
     get_all_teams, get_seasons_for_team, get_team_colors, get_team_logos,
     get_team_epa_offense_defense, get_team_epa_by_week, get_all_teams_records, get_team_schedule,
-    get_latest_season_with_games,
+    get_latest_season_with_games, render_matchup_line,
     get_team_qb_leaders, get_team_rb_leaders, get_team_wr_leaders, get_team_defensive_summary,
     get_team_qb_leaders_yards, get_team_rb_leaders_yards, get_team_wr_leaders_yards,
     get_all_teams_defensive_summary, get_team_rank_label,
@@ -106,7 +106,7 @@ with onglet_overview:
         schedule_futur = get_team_schedule(team_abbr, saison_calendrier)
     prochains = schedule_futur[~schedule_futur["joue"]].sort_values("week")
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns([1, 2])
     with col1:
         st.subheader("Derniers matchs")
         if derniers.empty:
@@ -115,7 +115,8 @@ with onglet_overview:
             for _, row in derniers.iterrows():
                 resultat = "V" if row["team_score"] > row["opp_score"] else ("D" if row["team_score"] < row["opp_score"] else "N")
                 lieu = "vs" if row["domicile"] else "@"
-                st.write(f"S{row['week']} — {resultat} {lieu} {row['opponent']} · {int(row['team_score'])}-{int(row['opp_score'])}")
+                contenu = f"S{row['week']} — {resultat} {lieu} {row['opponent']} · {int(row['team_score'])}-{int(row['opp_score'])}"
+                render_matchup_line(contenu, row["game_id"])
 
     with col2:
         titre = f"Prochains matchs ({len(prochains)})" if not prochains.empty else "Prochains matchs"
@@ -125,9 +126,17 @@ with onglet_overview:
         if prochains.empty:
             st.info("Aucun match à venir programmé.")
         else:
-            for _, row in prochains.iterrows():
-                lieu = "vs" if row["domicile"] else "@"
-                st.write(f"S{row['week']} — {lieu} {row['opponent']} · {row['gameday']}")
+            milieu = (len(prochains) + 1) // 2
+            gauche, droite = prochains.iloc[:milieu], prochains.iloc[milieu:]
+            sc1, sc2 = st.columns(2)
+            with sc1:
+                for _, row in gauche.iterrows():
+                    lieu = "vs" if row["domicile"] else "@"
+                    st.write(f"S{row['week']} — {lieu} {row['opponent']} · {row['gameday']}")
+            with sc2:
+                for _, row in droite.iterrows():
+                    lieu = "vs" if row["domicile"] else "@"
+                    st.write(f"S{row['week']} — {lieu} {row['opponent']} · {row['gameday']}")
 
     st.divider()
 
