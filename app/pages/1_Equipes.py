@@ -6,7 +6,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from queries import (
     get_all_teams, get_seasons_for_team, get_team_colors, get_team_logos,
     get_team_epa_offense_defense, get_team_epa_by_week, get_all_teams_records, get_team_schedule,
-    get_latest_season_with_games, render_matchup_line,
+    get_latest_season_with_games, render_matchup_line, formater_date_fr,
     get_team_qb_leaders, get_team_rb_leaders, get_team_wr_leaders, get_team_defensive_summary,
     get_team_qb_leaders_yards, get_team_rb_leaders_yards, get_team_wr_leaders_yards,
     get_all_teams_defensive_summary, get_team_rank_label,
@@ -132,11 +132,11 @@ with onglet_overview:
             with sc1:
                 for _, row in gauche.iterrows():
                     lieu = "vs" if row["domicile"] else "@"
-                    st.write(f"S{row['week']} — {lieu} {row['opponent']} · {row['gameday']}")
+                    st.write(f"S{row['week']} — {lieu} {row['opponent']} · {formater_date_fr(row['gameday'])}")
             with sc2:
                 for _, row in droite.iterrows():
                     lieu = "vs" if row["domicile"] else "@"
-                    st.write(f"S{row['week']} — {lieu} {row['opponent']} · {row['gameday']}")
+                    st.write(f"S{row['week']} — {lieu} {row['opponent']} · {formater_date_fr(row['gameday'])}")
 
     st.divider()
 

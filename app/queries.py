@@ -2356,6 +2356,28 @@ def render_matchup_line(contenu_texte, game_id):
     st.markdown(_aplatir_html(_lien_match(contenu_texte, game_id)), unsafe_allow_html=True)
 
 
+_JOURS_FR = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+_MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet",
+            "août", "septembre", "octobre", "novembre", "décembre"]
+
+def formater_date_fr(valeur_date):
+    """Formate une date en français lisible ('mercredi 14 septembre 2026').
+    Table de correspondance codée en dur plutôt que locale.setlocale() +
+    strftime('%A %d %B') : la locale fr_FR n'est souvent pas installée sur
+    les serveurs Linux minimalistes (Streamlit Cloud inclus), ce qui ferait
+    planter ou silencieusement retomber en anglais selon l'environnement.
+    Cette version marche à l'identique partout. Accepte une chaîne ISO, un
+    pandas.Timestamp ou un datetime.date ; renvoie tel quel si le format
+    n'est pas reconnu plutôt que de casser l'affichage."""
+    if valeur_date is None or (isinstance(valeur_date, float) and valeur_date != valeur_date):
+        return ""
+    try:
+        d = pd.to_datetime(valeur_date)
+    except (ValueError, TypeError):
+        return str(valeur_date)
+    return f"{_JOURS_FR[d.weekday()]} {d.day} {_MOIS_FR[d.month - 1]} {d.year}"
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # RECHERCHE GLOBALE — barre affichée en haut de chaque page
 # ──────────────────────────────────────────────────────────────────────────────
