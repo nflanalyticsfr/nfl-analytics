@@ -11,7 +11,7 @@ from queries import (
     get_top_qb_season_yards, get_top_rb_season_yards, get_top_wr_season_yards,
     get_top_teams_offense_yards_season, get_top_qb_season_epa, get_top_rb_season_epa,
     get_team_weekly_movement, get_player_weekly_movement, render_ranking_with_movement,
-    get_top_wr_season_epa, get_team_epa_offense_defense, render_global_search,
+    get_top_wr_season_epa, get_team_epa_offense_defense, render_global_search, render_footer,
 )
 from styles import PAGE_FONT_CSS
 
@@ -168,3 +168,5 @@ with onglet_avance:
         with col2:
             st.write("Top 3 Défenses — EPA concédé le plus bas")
             render_team_podium(df_teams_epa.nsmallest(3, "epa_defense").reset_index(drop=True), metric_col="epa_defense", decimals=3)
+
+render_footer()

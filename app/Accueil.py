@@ -8,7 +8,7 @@ from queries import (
     get_top_qb_season_yards, get_top_rb_season_yards, get_top_wr_season_yards,
     get_top_qb_season_epa, get_team_epa_offense_defense,
     get_season_sacks_leader, get_season_interceptions_leader, get_season_success_rate_leader,
-    render_insight_leaders, render_global_search, render_navigation_card, render_page_link,
+    render_insight_leaders, render_global_search, render_navigation_card, render_page_link, render_footer,
 )
 from styles import HOME_CSS
 
@@ -169,3 +169,5 @@ with st.container(border=True):
     st.subheader("Un avis à partager ?")
     st.write("Ce projet est en phase de test. Tes retours m'aident à savoir quoi améliorer en priorité.")
     st.link_button("Donner mon avis", "https://docs.google.com/forms/d/e/1FAIpQLSdEDhXjqpZjaKdjrIXozICa3qRP9qvOj0pNRtt5L8GMemIPiw/viewform", icon="📝")
+
+render_footer()

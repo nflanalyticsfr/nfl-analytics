@@ -13,7 +13,7 @@ from queries import (
     get_top_teams_offense_yards_season,
     get_team_epa_cumulative_through_week, get_player_epa_cumulative_through_week,
     get_social_top_qb_week, get_social_top_rb_week, get_social_top_wr_week,
-    get_social_best_offense_week, get_social_best_defense_week, render_global_search,
+    get_social_best_offense_week, get_social_best_defense_week, render_global_search, render_footer,
 )
 from social_cards import (
     generer_carte_joueur, generer_carte_equipe, generer_podium_image,
@@ -218,3 +218,5 @@ else:
         st.image(img, width=400)
         st.download_button("Télécharger le PNG", buffer.getvalue(),
                             file_name=f"power_tiers_{season}.png", mime="image/png", key="dl_power_tiers")
+
+render_footer()

@@ -33,6 +33,7 @@ import duckdb
 import pandas as pd
 import re
 import streamlit as st
+from datetime import datetime
 from pathlib import Path
 
 DB_PATH = Path(__file__).resolve().parent.parent / "database" / "nfl.duckdb"
@@ -2376,6 +2377,20 @@ def formater_date_fr(valeur_date):
     except (ValueError, TypeError):
         return str(valeur_date)
     return f"{_JOURS_FR[d.weekday()]} {d.day} {_MOIS_FR[d.month - 1]} {d.year}"
+
+
+def render_footer():
+    """Pied de page — copyright, attribution des données, mention de
+    non-affiliation. Appelé en bas de chaque page. Année calculée
+    dynamiquement plutôt qu'en dur, pour ne pas devenir fausse en 2027."""
+    annee = datetime.now().year
+    st.markdown(_aplatir_html(f"""
+        <div style="text-align:center;padding:24px 0 12px;margin-top:32px;
+                    border-top:1px solid #E2E8F0;color:#94A3B8;font-size:12px;">
+            © {annee} NFL Analytics FR · Données nflverse (nflfastR) ·
+            Site non affilié à la NFL
+        </div>
+    """), unsafe_allow_html=True)
 
 
 # ──────────────────────────────────────────────────────────────────────────────

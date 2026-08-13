@@ -11,7 +11,7 @@ from queries import (
     get_player_weekly_trend, get_player_games_played, convertir_taille_poids,
     get_qb_full_rankings, get_rb_full_rankings, get_wr_full_rankings, get_def_full_rankings, get_rank_label,
     get_player_defensive_season, get_player_defensive_weekly_trend,
-    render_global_search,
+    render_global_search, render_footer,
 )
 from styles import PAGE_FONT_CSS
 
@@ -323,3 +323,5 @@ with onglet_avance:
         st.plotly_chart(fig, width='stretch', key=f"epa_trend_{player_id}_{season}")
     else:
         st.info("Aucune donnée EPA hebdomadaire disponible.")
+
+render_footer()

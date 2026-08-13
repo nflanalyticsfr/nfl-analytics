@@ -9,7 +9,7 @@ from queries import (
     get_team_colors, get_team_logos, get_game_win_probability, get_game_epa_cumulative,
     get_game_score_progression, get_game_drives, get_game_top_performer, get_game_play_by_play,
     render_game_performers, traduire_surface, style_dataframe, render_table,
-    render_global_search,
+    render_global_search, render_footer,
 )
 from styles import PAGE_FONT_CSS
 
@@ -248,3 +248,5 @@ with onglet_analyse:
         st.plotly_chart(fig_epa, width='stretch', key=f"epa_{game_id}")
     else:
         st.info("Données EPA indisponibles pour ce match.")
+
+render_footer()

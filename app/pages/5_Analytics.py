@@ -9,7 +9,7 @@ from queries import (
     style_dataframe, render_table,
     get_passing_leaderboard_season, get_rushing_leaderboard_season, get_receiving_leaderboard_season,
     get_passing_leaderboard_epa_season, get_rushing_leaderboard_epa_season, get_receiving_leaderboard_epa_season,
-    get_defense_leaderboard_season, render_global_search,
+    get_defense_leaderboard_season, render_global_search, render_footer,
 )
 from styles import PAGE_FONT_CSS
 
@@ -288,3 +288,5 @@ with onglet_avance:
                 colonnes_entieres=["Cibles", "Rec", "Yds"],
                 colonnes_decimales=["EPA/Cible", "Air Yds Moy.", "YAC Moy."],
             )
+
+render_footer()

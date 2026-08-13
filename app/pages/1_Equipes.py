@@ -10,7 +10,7 @@ from queries import (
     get_team_qb_leaders, get_team_rb_leaders, get_team_wr_leaders, get_team_defensive_summary,
     get_team_qb_leaders_yards, get_team_rb_leaders_yards, get_team_wr_leaders_yards,
     get_all_teams_defensive_summary, get_team_rank_label,
-    render_podium, render_global_search,
+    render_podium, render_global_search, render_footer,
 )
 from constants import DEFAULT_TEAM
 from styles import PAGE_FONT_CSS
@@ -245,3 +245,5 @@ with onglet_avance:
     fig.update_layout(xaxis_title="Semaine", yaxis_title="EPA par play", height=400)
     fig.update_xaxes(dtick=1)
     st.plotly_chart(fig, width='stretch', key=f"epa_trend_team_{team_abbr}_{season}")
+
+render_footer()
