@@ -10,7 +10,7 @@ from queries import (
     get_team_qb_leaders, get_team_rb_leaders, get_team_wr_leaders, get_team_defensive_summary,
     get_team_qb_leaders_yards, get_team_rb_leaders_yards, get_team_wr_leaders_yards,
     get_all_teams_defensive_summary, get_team_rank_label,
-    render_podium, render_global_search, render_footer,
+    render_podium, render_global_search, render_footer, render_header,
 )
 from constants import DEFAULT_TEAM
 from styles import PAGE_FONT_CSS
@@ -19,6 +19,7 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="Equipes", layout="wide")
 
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
+render_header()
 render_global_search()
 
 teams_df = get_all_teams()
@@ -46,11 +47,11 @@ with col_select:
     st.query_params["team"] = team_abbr
 
 with col_season:
-    seasons = get_seasons_for_team(team_abbr)
+    seasons = sorted(get_seasons_for_team(team_abbr), reverse=True)
     # key inclut team_abbr : changer d'équipe réinitialise logiquement la
     # saison à la plus récente disponible pour cette équipe, sans jamais
     # affecter la sélection d'équipe elle-même.
-    season = st.selectbox("Saison", seasons, index=len(seasons) - 1, key=f"select_season_{team_abbr}")
+    season = st.selectbox("Saison", seasons, index=0, key=f"select_season_{team_abbr}")
 
 colors = get_team_colors()
 logos = get_team_logos()

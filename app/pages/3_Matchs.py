@@ -9,18 +9,19 @@ from queries import (
     get_team_colors, get_team_logos, get_game_win_probability, get_game_epa_cumulative,
     get_game_score_progression, get_game_drives, get_game_top_performer, get_game_play_by_play,
     render_game_performers, traduire_surface, style_dataframe, render_table,
-    render_global_search, render_footer,
+    render_global_search, render_footer, render_header,
 )
 from styles import PAGE_FONT_CSS
 
 st.set_page_config(page_title="Matchs", layout="wide")
 
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
+render_header()
 render_global_search()
 
 st.title("Matchs")
 
-seasons = get_available_seasons()
+seasons = sorted(get_available_seasons(), reverse=True)
 
 # Un lien entrant (?game=...) encode saison et semaine dans le game_id
 # (convention nflverse "saison_semaine_visiteur_domicile"). Sans ça, les
@@ -37,12 +38,12 @@ if initial_game_id:
 col_season, col_week, col_match = st.columns([1, 1, 2])
 
 with col_season:
-    index_season = seasons.index(season_cible) if season_cible in seasons else len(seasons) - 1
+    index_season = seasons.index(season_cible) if season_cible in seasons else 0
     season = st.selectbox("Saison", seasons, index=index_season, key="game_season")
 
 with col_week:
-    weeks = get_weeks_for_season(season)
-    index_week = weeks.index(week_cible) if week_cible in weeks else len(weeks) - 1
+    weeks = sorted(get_weeks_for_season(season), reverse=True)
+    index_week = weeks.index(week_cible) if week_cible in weeks else 0
     week = st.selectbox("Semaine", weeks, index=index_week, key="game_week")
 
 games = get_games_for_week(season, week)

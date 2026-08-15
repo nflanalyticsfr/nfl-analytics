@@ -2393,6 +2393,22 @@ def render_footer():
     """), unsafe_allow_html=True)
 
 
+def render_header():
+    """En-tête compact affiché en haut de chaque page hors Accueil (qui a
+    son propre hero, avec tagline et stat-strip — contexte-spécifique à
+    la page d'accueil). Même identité visuelle réduite au strict
+    nécessaire : juste le wordmark, pour une continuité de marque sans
+    répéter le hero complet sur des pages qui n'en ont pas besoin."""
+    st.markdown(_aplatir_html("""
+        <div style="background:#0F172A;border-radius:12px;padding:12px 22px;
+                    margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+            <span style="font-size:20px;">🏈</span>
+            <span style="color:#F8FAFC;font-weight:800;font-size:17px;
+                        font-family:'Manrope',sans-serif;">NFL Analytics FR</span>
+        </div>
+    """), unsafe_allow_html=True)
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # RECHERCHE GLOBALE — barre affichée en haut de chaque page
 # ──────────────────────────────────────────────────────────────────────────────

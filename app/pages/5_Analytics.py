@@ -9,12 +9,13 @@ from queries import (
     style_dataframe, render_table,
     get_passing_leaderboard_season, get_rushing_leaderboard_season, get_receiving_leaderboard_season,
     get_passing_leaderboard_epa_season, get_rushing_leaderboard_epa_season, get_receiving_leaderboard_epa_season,
-    get_defense_leaderboard_season, render_global_search, render_footer,
+    get_defense_leaderboard_season, render_global_search, render_footer, render_header,
 )
 from styles import PAGE_FONT_CSS
 
 st.set_page_config(page_title="Analytics", layout="wide")
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
+render_header()
 render_global_search()
 st.title("Analytics")
 
@@ -173,8 +174,8 @@ def filtre_reception(key):
 # ═══════════════════════════════════════════════════════════════════════
 # SÉLECTEUR SAISON — commun aux deux onglets, reste hors tabs
 # ═══════════════════════════════════════════════════════════════════════
-seasons = get_available_seasons()
-season = st.selectbox("Saison", seasons, index=len(seasons) - 1, key="analytics_season")
+seasons = sorted(get_available_seasons(), reverse=True)
+season = st.selectbox("Saison", seasons, index=0, key="analytics_season")
 
 st.divider()
 

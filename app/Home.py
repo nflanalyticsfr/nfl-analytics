@@ -1,9 +1,9 @@
 """
 Copie temporaire de Accueil.py.
 
-Le Main file path configuré sur Streamlit Cloud pointe encore vers
+Le Main file path configure sur Streamlit Cloud pointe encore vers
 app/Home.py. st.switch_page ne peut rediriger que vers le fichier principal
-configuré ou un fichier dans pages/ -- jamais vers un fichier "libre" comme
+configure ou un fichier dans pages/ -- jamais vers un fichier "libre" comme
 Accueil.py. Un simple stub de redirection ne fonctionne donc pas ici.
 
 Une fois le Main file path change dans Streamlit Cloud (Settings > General
@@ -29,7 +29,6 @@ st.set_page_config(page_title="NFL Analytics", layout="wide", page_icon="🏈")
 stats = get_home_stats()
 
 st.markdown(HOME_CSS, unsafe_allow_html=True)
-render_global_search()
 
 st.markdown(f"""
 <div class="hero-banner">
@@ -44,6 +43,8 @@ st.markdown(f"""
     <div class="stat-item"><div class="stat-value">{stats['nb_saisons']}</div><div class="stat-label">Saisons</div></div>
 </div>
 """, unsafe_allow_html=True)
+
+render_global_search()
 
 
 # ─── Aperçu de la saison — insights, pas des tableaux ───

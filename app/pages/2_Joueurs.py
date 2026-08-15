@@ -11,18 +11,19 @@ from queries import (
     get_player_weekly_trend, get_player_games_played, convertir_taille_poids,
     get_qb_full_rankings, get_rb_full_rankings, get_wr_full_rankings, get_def_full_rankings, get_rank_label,
     get_player_defensive_season, get_player_defensive_weekly_trend,
-    render_global_search, render_footer,
+    render_global_search, render_footer, render_header,
 )
 from styles import PAGE_FONT_CSS
 
 st.set_page_config(page_title="Joueurs", layout="wide")
 
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
+render_header()
 render_global_search()
 
 st.title("Joueurs")
 
-seasons = get_available_seasons()
+seasons = sorted(get_available_seasons(), reverse=True)
 
 # Un lien entrant (?player=...&season=...) doit présélectionner la bonne
 # saison : sans ça, un joueur absent de la saison affichée par défaut
@@ -30,7 +31,7 @@ seasons = get_available_seasons()
 # silencieusement sur le premier joueur de la liste.
 season_cible = st.query_params.get("season")
 season_cible = int(season_cible) if season_cible and season_cible.isdigit() else None
-index_season = seasons.index(season_cible) if season_cible in seasons else len(seasons) - 1
+index_season = seasons.index(season_cible) if season_cible in seasons else 0
 season = st.selectbox("Saison", seasons, index=index_season, key="player_season")
 
 if "player_filters_reset" not in st.session_state:

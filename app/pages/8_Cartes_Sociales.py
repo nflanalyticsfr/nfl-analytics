@@ -13,7 +13,7 @@ from queries import (
     get_top_teams_offense_yards_season,
     get_team_epa_cumulative_through_week, get_player_epa_cumulative_through_week,
     get_social_top_qb_week, get_social_top_rb_week, get_social_top_wr_week,
-    get_social_best_offense_week, get_social_best_defense_week, render_global_search, render_footer,
+    get_social_best_offense_week, get_social_best_defense_week, render_global_search, render_footer, render_header,
 )
 from social_cards import (
     generer_carte_joueur, generer_carte_equipe, generer_podium_image,
@@ -23,13 +23,14 @@ from styles import PAGE_FONT_CSS
 
 st.set_page_config(page_title="Cartes sociales", layout="wide")
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
+render_header()
 render_global_search()
 st.title("Générateur de visuels — Instagram")
 st.caption("Génère un visuel carré (1080×1080), avec rang et évolution vs semaine précédente.")
 
 type_carte = st.radio("Type de carte", ["Joueur", "Équipe", "Podium", "Power Tiers"], horizontal=True, key="type_carte_select")
 
-seasons = get_available_seasons()
+seasons = sorted(get_available_seasons(), reverse=True)
 colors = get_team_colors()
 logos = get_team_logos()
 
@@ -37,9 +38,9 @@ logos = get_team_logos()
 # Carte Joueur
 # ─────────────────────────────────────────────────────────────
 if type_carte == "Joueur":
-    season = st.selectbox("Saison", seasons, index=len(seasons) - 1, key="joueur_season")
-    weeks = get_weeks_for_season(season)
-    week = st.selectbox("Semaine", weeks, index=len(weeks) - 1, key="joueur_week")
+    season = st.selectbox("Saison", seasons, index=0, key="joueur_season")
+    weeks = sorted(get_weeks_for_season(season), reverse=True)
+    week = st.selectbox("Semaine", weeks, index=0, key="joueur_week")
 
     poste = st.radio("Poste", ["QB", "RB", "WR"], horizontal=True, key="joueur_poste")
     role_map = {"QB": "passing", "RB": "rushing", "WR": "receiving"}
@@ -88,9 +89,9 @@ if type_carte == "Joueur":
 # Carte Équipe
 # ─────────────────────────────────────────────────────────────
 elif type_carte == "Équipe":
-    season = st.selectbox("Saison", seasons, index=len(seasons) - 1, key="equipe_season")
-    weeks = get_weeks_for_season(season)
-    week = st.selectbox("Semaine", weeks, index=len(weeks) - 1, key="equipe_week")
+    season = st.selectbox("Saison", seasons, index=0, key="equipe_season")
+    weeks = sorted(get_weeks_for_season(season), reverse=True)
+    week = st.selectbox("Semaine", weeks, index=0, key="equipe_week")
 
     teams_df = get_all_teams()
     team_name = st.selectbox("Équipe", teams_df["team_name"], key="equipe_select")
@@ -133,12 +134,12 @@ elif type_carte == "Équipe":
 # Podium
 # ─────────────────────────────────────────────────────────────
 elif type_carte == "Podium":
-    season = st.selectbox("Saison", seasons, index=len(seasons) - 1, key="podium_season")
+    season = st.selectbox("Saison", seasons, index=0, key="podium_season")
     portee = st.radio("Portée", ["Semaine", "Saison"], horizontal=True, key="podium_portee")
 
     if portee == "Semaine":
-        weeks = get_weeks_for_season(season)
-        week = st.selectbox("Semaine", weeks, index=len(weeks) - 1, key="podium_week")
+        weeks = sorted(get_weeks_for_season(season), reverse=True)
+        week = st.selectbox("Semaine", weeks, index=0, key="podium_week")
 
         categories = {
             "Top 3 QB — EPA/Dropback": (get_social_top_qb_week(season, week), "epa_per_play", 3, False),

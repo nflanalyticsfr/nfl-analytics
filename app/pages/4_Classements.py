@@ -11,23 +11,24 @@ from queries import (
     get_top_qb_season_yards, get_top_rb_season_yards, get_top_wr_season_yards,
     get_top_teams_offense_yards_season, get_top_qb_season_epa, get_top_rb_season_epa,
     get_team_weekly_movement, get_player_weekly_movement, render_ranking_with_movement,
-    get_top_wr_season_epa, get_team_epa_offense_defense, render_global_search, render_footer,
+    get_top_wr_season_epa, get_team_epa_offense_defense, render_global_search, render_footer, render_header,
 )
 from styles import PAGE_FONT_CSS
 
 st.set_page_config(page_title="Classements", layout="wide")
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
+render_header()
 render_global_search()
 st.title("Classements")
 
 # ─── Sélecteurs saison + semaine — communs aux deux onglets, reste hors tabs ───
-seasons = get_available_seasons()
+seasons = sorted(get_available_seasons(), reverse=True)
 col_season, col_week = st.columns(2)
 with col_season:
-    selected_season = st.selectbox("Saison", seasons, index=len(seasons) - 1, key="rankings_season")
+    selected_season = st.selectbox("Saison", seasons, index=0, key="rankings_season")
 with col_week:
-    weeks = get_weeks_for_season(selected_season)
-    week = st.selectbox("Semaine", weeks, index=len(weeks) - 1, key=f"rankings_week_{selected_season}")
+    weeks = sorted(get_weeks_for_season(selected_season), reverse=True)
+    week = st.selectbox("Semaine", weeks, index=0, key=f"rankings_week_{selected_season}")
 
 st.divider()
 

@@ -17,7 +17,6 @@ st.set_page_config(page_title="NFL Analytics", layout="wide", page_icon="🏈")
 stats = get_home_stats()
 
 st.markdown(HOME_CSS, unsafe_allow_html=True)
-render_global_search()
 
 st.markdown(f"""
 <div class="hero-banner">
@@ -32,6 +31,8 @@ st.markdown(f"""
     <div class="stat-item"><div class="stat-value">{stats['nb_saisons']}</div><div class="stat-label">Saisons</div></div>
 </div>
 """, unsafe_allow_html=True)
+
+render_global_search()
 
 
 # ─── Aperçu de la saison — insights, pas des tableaux ───

@@ -4,10 +4,11 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from styles import PAGE_FONT_CSS
-from queries import render_global_search, render_footer
+from queries import render_global_search, render_footer, render_header
 
 st.set_page_config(page_title="A propos", layout="wide")
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
+render_header()
 render_global_search()
 st.title("A propos")
 
