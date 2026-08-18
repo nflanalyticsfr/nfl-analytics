@@ -1,4 +1,5 @@
 import nfl_data_py as nfl
+import pandas as pd
 import sys
 from pathlib import Path
 
@@ -28,6 +29,14 @@ COLONNES_TEAMS = [
     "team_abbr", "team_name", "team_conf", "team_division",
     "team_color", "team_logo_espn",
 ]
+
+# nfl_data_py.import_team_desc() cible en dur l'ancien repo GitHub
+# nflfastR-data (github.com/nflverse/nflfastR-data), que nflverse a
+# abandonné au profit d'un système de releases GitHub — l'URL renvoie
+# 404 depuis leur migration. Le fichier existe toujours, juste ailleurs
+# (github.com/nflverse/nflverse-pbp) ; on le lit en direct plutôt que de
+# dépendre d'une fonction de nfl_data_py qui pointe vers une URL morte.
+URL_TEAMS_COLORS_LOGOS = "https://raw.githubusercontent.com/nflverse/nflverse-pbp/master/teams_colors_logos.csv"
 
 # BUG CORRIGÉ LORS DE L'AUDIT : `range(2015, 2026)` exclut 2026 — la table
 # `games` (calendrier, scores) n'incluait donc jamais la saison en cours.
@@ -60,7 +69,16 @@ def fetch_players():
 
 def fetch_teams():
     print("Téléchargement teams...")
-    df = nfl.import_team_desc()
+    try:
+        df = pd.read_csv(URL_TEAMS_COLORS_LOGOS)
+    except Exception as e:
+        raise RuntimeError(
+            f"Impossible de récupérer teams_colors_logos.csv depuis "
+            f"{URL_TEAMS_COLORS_LOGOS} ({e}). Si nflverse a de nouveau "
+            f"déplacé ce fichier, chercher son nouvel emplacement sur "
+            f"github.com/nflverse/nflverse-pbp ou dans les releases "
+            f"github.com/nflverse/nflverse-data (release 'teams')."
+        ) from e
     df = _select(df, COLONNES_TEAMS, "teams")
     df.to_parquet(OUTPUT_DIR / "teams.parquet", index=False)
     print(f"  Sauvegardé : teams.parquet ({len(df)} lignes)")

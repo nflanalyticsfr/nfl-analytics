@@ -52,7 +52,7 @@ with col_search:
 # (sinon chercher "watt" laissait un filtre équipe avec les 32 équipes,
 # alors que 3-4 seulement ont un joueur nommé Watt).
 joueurs_recherche = (
-    joueurs[joueurs["player_name"].str.contains(recherche, case=False, na=False)]
+    joueurs[joueurs["player_name"].str.contains(recherche, case=False, na=False, regex=False)]
     if recherche else joueurs
 )
 

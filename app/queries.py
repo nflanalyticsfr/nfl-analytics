@@ -2452,12 +2452,12 @@ def render_global_search():
 
     equipes = get_all_teams()
     equipes_trouvees = equipes[
-        equipes["team_name"].str.lower().str.contains(q, na=False)
-        | equipes["team_abbr"].str.lower().str.contains(q, na=False)
+        equipes["team_name"].str.lower().str.contains(q, na=False, regex=False)
+        | equipes["team_abbr"].str.lower().str.contains(q, na=False, regex=False)
     ].head(5)
 
     joueurs = get_global_search_index()
-    joueurs_trouves = joueurs[joueurs["nom"].str.lower().str.contains(q, na=False)].head(8)
+    joueurs_trouves = joueurs[joueurs["nom"].str.lower().str.contains(q, na=False, regex=False)].head(8)
 
     if equipes_trouvees.empty and joueurs_trouves.empty:
         st.caption("Aucun résultat.")

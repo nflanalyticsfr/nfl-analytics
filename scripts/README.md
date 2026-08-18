@@ -68,3 +68,18 @@ disponibles, couleurs d'équipe, cohérence des logos...). Peuvent être
 ignorés en usage normal. `validate_pipeline.py` est différent : c'est la
 porte de sécurité du workflow d'ingestion (voir plus haut), pas un script
 de diagnostic manuel.
+
+## `keep_awake.py` — empêcher la mise en veille de l'app
+
+Streamlit Community Cloud endort toute app sans trafic depuis 12h.
+`.github/workflows/keep_awake.yml` visite l'app toutes les 6 heures via
+un vrai navigateur headless (Playwright) — un simple curl ne suffit pas :
+Streamlit a besoin d'une vraie connexion WebSocket pour compter une
+visite comme trafic, et réveiller une app déjà endormie nécessite de
+cliquer le bouton "Yes, get this app back up!", impossible avec une
+requête HTTP simple. Complètement indépendant du pipeline de données
+(qui ne tourne que vendredi/lundi/mardi — bien trop espacé pour ça).
+
+L'URL de l'app est en dur dans le workflow (`APP_URL`) — à corriger si
+elle change.
+
