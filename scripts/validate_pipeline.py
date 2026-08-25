@@ -49,12 +49,18 @@ for table in ["plays", "games", "players", "teams", "rosters"]:
     else:
         ok(f"{table} : {count:,} lignes")
 
-# ─── 32 équipes ───
+# ─── Au moins 32 équipes ───
+# La source teams_colors_logos.csv inclut légitimement des franchises
+# historiques en plus des 32 actuelles (Oakland/Las Vegas, San Diego/LA
+# Chargers, St. Louis/LA Rams, anciens noms de Washington...) — utile pour
+# mapper correctement les vieilles données play-by-play qui référencent
+# ces anciens codes. Un total > 32 est donc normal, seul un total < 32
+# indiquerait une vraie perte de données.
 nb_teams = con.execute("SELECT COUNT(*) FROM teams").fetchone()[0]
-if nb_teams != 32:
-    echec(f"table 'teams' contient {nb_teams} équipes, 32 attendues")
+if nb_teams < 32:
+    echec(f"table 'teams' ne contient que {nb_teams} équipes, 32 minimum attendues")
 else:
-    ok("32 équipes présentes")
+    ok(f"{nb_teams} équipes présentes (32 actuelles + variantes historiques éventuelles)")
 
 # ─── Saison la plus récente réellement disponible ───
 derniere_saison = con.execute("SELECT MAX(season) FROM plays").fetchone()[0]
