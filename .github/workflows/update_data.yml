@@ -36,7 +36,9 @@ jobs:
           python-version: "3.11"
 
       - name: Installer les dépendances
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
 
       - name: Pipeline d'ingestion (voir scripts/README.md pour le détail)
         run: |
@@ -47,6 +49,9 @@ jobs:
 
       - name: Validation automatique (porte de sécurité)
         run: python scripts/validate_pipeline.py
+
+      - name: Tests unitaires (porte de sécurité)
+        run: pytest tests/
 
       - name: Commit et push si la base a changé
         run: |

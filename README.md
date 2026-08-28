@@ -8,31 +8,31 @@ Une application Streamlit pour explorer les statistiques, les performances et le
 
 ## 📊 Fonctionnalités
 
-### 🏠 [Page d'accueil](app/Home.py)
+### 🏠 [Page d'accueil](app/Accueil.py)
 - Vue d'ensemble des statistiques globales (nombre de plays, matchs, équipes, saisons)
 - Leaders de la ligue (passing yards, rushing yards, receiving yards, sacks, interceptions)
 - Leaders analytiques (EPA/Play, Success Rate, Offensive/Defensive EPA)
 - Derniers matchs joués
 
-### 🏈 [Équipes](app/pages/1_Teams.py)
+### 🏈 [Équipes](app/pages/1_Equipes.py)
 - Fiche complète par équipe : bilan (V/D/N), EPA offensif/défensif
 - Classement dans la ligue
 - Leaders offensifs (QB, RB, WR)
 - Calendrier et résultats des matchs
 - Tendances EPA par semaine
 
-### 👤 [Joueurs](app/pages/2_Players.py)
+### 👤 [Joueurs](app/pages/2_Joueurs.py)
 - Recherche et fiche détaillée par joueur
 - Statistiques complètes (passing, rushing, receiving, pression, défense)
 - EPA par saison et tendance hebdomadaire
 - Bio (taille, poids, position, équipe)
 
-### 📅 [Matchs](app/pages/3_Games.py)
+### 📅 [Matchs](app/pages/3_Matchs.py)
 - Détail d'un match : score, drives, win probability
 - Play-by-play complet avec EPA, success rate, et métriques avancées
 - Visualisation de la progression du score et de la win probability
 
-### 🏆 [Classements](app/pages/4_Rankings.py)
+### 🏆 [Classements](app/pages/4_Classements.py)
 - Meilleurs joueurs (QB, RB, WR) par saison ou par semaine
 - Meilleurs équipes (offense, défense) par saison ou par semaine
 - Filtres par semaine et par type de classement
@@ -41,15 +41,15 @@ Une application Streamlit pour explorer les statistiques, les performances et le
 - Visualisation EPA offensif vs défensif pour toutes les équipes
 - Comparaison des performances par saison
 
-### ⚖️ [Comparer](app/pages/6_Compare.py)
+### ⚖️ [Comparer](app/pages/6_Comparer.py)
 - Comparaison de plusieurs équipes sur plusieurs années
 - Analyse offensive ou défensive
 
-### 📱 [Social Cards](app/pages/8_Social_Cards.py)
+### 📱 [Cartes Sociales](app/pages/8_Cartes_Sociales.py)
 - Génération de cartes partagables avec les stats des joueurs
 - Variantes cumulées (semaine 1 → semaine sélectionnée)
 
-### ℹ️ [À propos](app/pages/7_About.py)
+### ℹ️ [À propos](app/pages/7_A_propos.py)
 - Source des données et méthodologie
 - Formulaire de feedback
 
@@ -99,7 +99,7 @@ python scripts/validate_epa.py
 
 ### 4. Exécuter l'application
 ```bash
-streamlit run app/Home.py
+streamlit run app/Accueil.py
 ```
 
 L'application sera accessible à l'adresse : [http://localhost:8501](http://localhost:8501)
@@ -111,19 +111,20 @@ L'application sera accessible à l'adresse : [http://localhost:8501](http://loca
 ```
 nfl-analytics/
 ├── app/                          # Application Streamlit
-│   ├── Home.py                   # Page d'accueil
+│   ├── Accueil.py                # Page d'accueil (point d'entrée)
 │   ├── constants.py              # Constantes partagées (saisons, équipe par défaut)
 │   ├── queries.py                # Couche d'accès aux données (requêtes DuckDB)
 │   ├── styles.py                 # Feuilles de style CSS
+│   ├── social_cards.py           # Génération des cartes sociales (Pillow)
 │   └── pages/                    # Pages Streamlit
-│       ├── 1_Teams.py
-│       ├── 2_Players.py
-│       ├── 3_Games.py
-│       ├── 4_Rankings.py
+│       ├── 1_Equipes.py
+│       ├── 2_Joueurs.py
+│       ├── 3_Matchs.py
+│       ├── 4_Classements.py
 │       ├── 5_Analytics.py
-│       ├── 6_Compare.py
-│       ├── 7_About.py
-│       └── 8_Social_Cards.py
+│       ├── 6_Comparer.py
+│       ├── 7_A_propos.py
+│       └── 8_Cartes_Sociales.py
 │
 ├── database/                     # Base de données
 │   └── nfl.duckdb                # Base DuckDB (exclue de Git, voir .gitignore)
@@ -157,7 +158,7 @@ Pour ajouter une nouvelle saison (ex: 2026) :
 2. Relancer le pipeline ETL (voir [Reconstruire la base de données](#3-reconstruire-la-base-de-données)).
 
 ### Équipes par défaut
-L'équipe sélectionnée par défaut sur la page `Teams` est définie par :
+L'équipe sélectionnée par défaut sur la page `Équipes` est définie par :
 ```python
 DEFAULT_TEAM = "ARI"  # Arizona Cardinals
 ```
