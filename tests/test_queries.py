@@ -121,10 +121,16 @@ class TestUtilitaires:
         assert abs(metres - 1.8796) < 0.01  # 74 pouces = 1.8796 mètres
 
     def test_convertir_taille_poids_livres(self):
-        """Vérifie la conversion du poids en livres vers kilogrammes."""
+        """Vérifie la conversion du poids en livres vers kilogrammes.
+
+        poids_kg est arrondi au kg entier (round() sans ndigits) : c'est
+        volontaire, c'est ce qui est affiché tel quel dans la fiche joueur
+        (f"{poids_kg} kg"), une précision décimale n'aurait aucun sens pour
+        un poids de joueur listé de toute façon approximatif.
+        """
         _, kg = convertir_taille_poids(None, 200)  # 200 livres
         assert kg is not None
-        assert abs(kg - 90.7184) < 0.01  # 200 livres = 90.7184 kg
+        assert kg == 91  # 200 livres = 90.7184 kg, arrondi à 91 kg
 
 
 # ───────────────────────────────────────────────────────────────────────────────
