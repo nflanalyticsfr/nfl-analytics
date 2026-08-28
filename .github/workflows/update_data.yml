@@ -17,6 +17,12 @@ on:
 permissions:
   contents: write  # nécessaire pour que le job puisse commit + push
 
+concurrency:
+  group: update-data
+  cancel-in-progress: false  # file d'attente plutôt qu'annulation : un run
+                              # manuel ne doit pas perdre le travail d'un run
+                              # planifié déjà en cours (et inversement)
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -63,5 +69,12 @@ jobs:
             echo "Aucun changement dans la base — rien à committer."
           else
             git commit -m "Mise à jour des données ($(date -u +%F))"
+            # Le checkout initial date d'avant le pipeline (plusieurs
+            # minutes) : si main a bougé depuis (push manuel, ou concurrency
+            # qui a laissé passer un autre run), un simple `git push`
+            # échoue avec "rejected (fetch first)". On rebase sur le main
+            # actuel juste avant de pousser pour l'éviter.
+            git fetch origin main
+            git rebase origin/main
             git push
           fi
