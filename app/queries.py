@@ -1533,12 +1533,14 @@ def get_rushing_leaderboard_season(season: int, min_attempts: int = 30):
         return df
 
     df["first_pct"] = (df["first_downs"] / df["att"] * 100).round(1)
+    df["ypc"] = (df["rush_yds"] / df["att"]).round(1)
     df = df.rename(columns={
         "player": "Player", "rush_yds": "Yds Course", "att": "Att", "td": "TD",
         "twenty_plus": "20+", "forty_plus": "40+", "lng": "Lng",
         "first_downs": "Rush 1st", "first_pct": "Rush 1st%", "fum": "Rush FUM",
+        "ypc": "Yds/Course",
     })
-    colonnes = ["player_id", "photo_url", "Player", "team", "Yds Course", "Att", "TD", "20+",
+    colonnes = ["player_id", "photo_url", "Player", "team", "Yds Course", "Yds/Course", "Att", "TD", "20+",
                 "40+", "Lng", "Rush 1st", "Rush 1st%", "Rush FUM"]
     return df[colonnes]
 

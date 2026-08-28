@@ -207,7 +207,7 @@ with onglet_overview:
         afficher_leaderboard(
             df[df["Att"] >= minimum],
             colonnes_entieres=["Yds Course", "Att", "TD", "20+", "40+", "Lng", "Rush 1st", "Rush FUM"],
-            colonnes_decimales=["Rush 1st%"],
+            colonnes_decimales=["Yds/Course", "Rush 1st%"],
         )
 
     with rec_tab:

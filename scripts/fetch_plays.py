@@ -1,4 +1,5 @@
 import nfl_data_py as nfl
+import nflreadpy as nflread
 import sys
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -96,6 +97,34 @@ def fetch_season(season: int) -> tuple[int, str, Exception | None]:
 
         presentes = [c for c in COLONNES_PLAYS if c in df.columns]
         absentes = [c for c in COLONNES_PLAYS if c not in df.columns]
+
+        # BUG CORRIGÉ LORS DE L'AUDIT : nfl_data_py (déprécié par nflverse au
+        # profit de nflreadpy, plus aucune mise à jour prévue) ne renvoie plus
+        # les colonnes cp/cpoe depuis un certain temps, sans lever d'erreur —
+        # elles disparaissent juste silencieusement de df.columns. On les
+        # récupère via nflreadpy (source officiellement recommandée) et on les
+        # rejoint sur (game_id, play_id). On garde nfl_data_py comme source
+        # principale malgré la dépréciation : il fournit encore correctement
+        # les colonnes de participation (was_pressure, defense_coverage_type,
+        # formations...) que nflreadpy seul ne renvoie pas dans load_pbp().
+        if "cp" in absentes or "cpoe" in absentes:
+            print(f"  cp/cpoe absentes de nfl_data_py pour {season}, récupération via nflreadpy...")
+            try:
+                cpoe_df = (
+                    nflread.load_pbp(season)
+                    .select(["game_id", "play_id", "cp", "cpoe"])
+                    .to_pandas()
+                )
+                cpoe_df["game_id"] = cpoe_df["game_id"].astype(str)
+                cpoe_df["play_id"] = cpoe_df["play_id"].astype(float)
+                df["game_id"] = df["game_id"].astype(str)
+                df["play_id"] = df["play_id"].astype(float)
+                df = df.merge(cpoe_df, on=["game_id", "play_id"], how="left")
+                presentes = [c for c in COLONNES_PLAYS if c in df.columns]
+                absentes = [c for c in COLONNES_PLAYS if c not in df.columns]
+            except Exception as e:
+                print(f"  Échec récupération cp/cpoe via nflreadpy pour {season} : {e}")
+
         if absentes:
             print(f"  Colonnes absentes pour {season} : {absentes}")
 
