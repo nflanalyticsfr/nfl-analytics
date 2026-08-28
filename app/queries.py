@@ -1632,7 +1632,12 @@ def get_passing_leaderboard_epa_season(season: int, min_dropbacks: int = 100):
 def get_rushing_leaderboard_epa_season(season: int, min_attempts: int = 30):
     """Version EPA du leaderboard coureurs. Généralisation à toute la ligue
     de get_player_rushing_season. Utilisé sur Analytics > Advanced Analytics
-    PRO > Joueurs > Course."""
+    PRO > Joueurs > Course.
+
+    RYOE (Rush Yards Over Expected) vient de ngs_rushing (Next Gen Stats,
+    tracking GPS) et non de plays — LEFT JOIN car cette donnée n'existe qu'à
+    partir de 2016 (cf. scripts/fetch_ngs_rushing.py) : NULL avant, c'est
+    attendu, pas une anomalie."""
     con = get_connection()
     query = """
         SELECT
@@ -1641,9 +1646,12 @@ def get_rushing_leaderboard_epa_season(season: int, min_attempts: int = 30):
             ANY_VALUE(r.headshot_url) AS photo_url,
             COUNT(*) FILTER (WHERE p.rush = 1) AS courses,
             SUM(p.rushing_yards) AS yards,
-            ROUND(AVG(p.epa) FILTER (WHERE p.rush = 1), 3) AS epa_per_play
+            ROUND(AVG(p.epa) FILTER (WHERE p.rush = 1), 3) AS epa_per_play,
+            ANY_VALUE(n.rush_yards_over_expected) AS ryoe,
+            ANY_VALUE(n.rush_yards_over_expected_per_att) AS ryoe_per_att
         FROM plays p
         LEFT JOIN rosters r ON p.rusher_player_id = r.player_id AND r.season = p.season
+        LEFT JOIN ngs_rushing n ON p.rusher_player_id = n.player_gsis_id AND n.season = p.season
         WHERE p.season = ? AND p.rusher_player_id IS NOT NULL
         GROUP BY p.rusher_player_name, p.posteam
         HAVING COUNT(*) FILTER (WHERE p.rush = 1) >= ?
@@ -1655,8 +1663,10 @@ def get_rushing_leaderboard_epa_season(season: int, min_attempts: int = 30):
 
     df = df.rename(columns={
         "player": "Player", "courses": "Att", "yards": "Yds Course", "epa_per_play": "EPA/Course",
+        "ryoe": "RYOE", "ryoe_per_att": "RYOE/Att",
     })
-    colonnes = ["player_id", "photo_url", "Player", "team", "EPA/Course", "Att", "Yds Course"]
+    colonnes = ["player_id", "photo_url", "Player", "team", "EPA/Course", "Att", "Yds Course",
+                "RYOE", "RYOE/Att"]
     return df[colonnes]
 
 @st.cache_data(ttl=3600)

@@ -36,7 +36,13 @@ con.execute("""
     SELECT * FROM read_parquet('data/static/rosters.parquet', union_by_name=true)
 """)
 
-for table in ["plays", "games", "players", "teams", "rosters"]:
+print("Chargement ngs_rushing (Rush Yards Over Expected)...")
+con.execute("""
+    CREATE OR REPLACE TABLE ngs_rushing AS
+    SELECT * FROM read_parquet('data/seasons_ngs_rushing/*.parquet', union_by_name=true)
+""")
+
+for table in ["plays", "games", "players", "teams", "rosters", "ngs_rushing"]:
     count = con.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
     print(f"  {table} : {count} lignes")
 

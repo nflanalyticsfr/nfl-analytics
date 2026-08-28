@@ -123,6 +123,23 @@ else:
             f"({df_epa['epa_moy'].min():.3f} à {df_epa['epa_moy'].max():.3f})"
         )
 
+# ─── ngs_rushing (RYOE) — informatif, non bloquant ───
+# Contrairement à plays/games/players/teams/rosters, ngs_rushing n'est pas
+# une dépendance dure de l'app (RYOE est un enrichissement d'une colonne
+# parmi d'autres sur Analytics > PRO > Course, pas une donnée dont le reste
+# de l'app dépend). Un échec ici ne doit pas bloquer tout le rebuild
+# quotidien juste parce que l'API Next Gen Stats a eu un problème
+# ponctuel — on log seulement, sans ajouter à ERREURS.
+nb_ngs = con.execute("SELECT COUNT(*) FROM ngs_rushing").fetchone()[0]
+if nb_ngs == 0:
+    print(
+        "NOTE : table 'ngs_rushing' vide — RYOE n'apparaîtra pas dans "
+        "Analytics > PRO > Course tant que le prochain run n'aura pas "
+        "réussi à récupérer les données Next Gen Stats (non bloquant)."
+    )
+else:
+    ok(f"ngs_rushing : {nb_ngs:,} lignes")
+
 con.close()
 
 print()

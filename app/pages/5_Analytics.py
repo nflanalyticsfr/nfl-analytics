@@ -277,7 +277,13 @@ with onglet_avance:
             afficher_leaderboard(
                 df[df["Att"] >= minimum] if not df.empty else df,
                 colonnes_entieres=["Att", "Yds Course"],
-                colonnes_decimales=["EPA/Course"],
+                colonnes_decimales=["EPA/Course", "RYOE", "RYOE/Att"],
+            )
+            st.caption(
+                "RYOE (Rush Yards Over Expected) : yards gagnés au-delà de ce "
+                "qu'un modèle Next Gen Stats attend vu le bloc de la ligne "
+                "offensive et le positionnement défensif. Disponible à partir "
+                "de 2016 uniquement (données de tracking GPS)."
             )
 
         with rec_tab_epa:

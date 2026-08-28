@@ -45,6 +45,7 @@ jobs:
           python scripts/fetch_static.py
           python scripts/fetch_rosters.py
           python scripts/fetch_plays.py
+          python scripts/fetch_ngs_rushing.py
           python scripts/load_duckdb.py
 
       - name: Validation automatique (porte de sécurité)

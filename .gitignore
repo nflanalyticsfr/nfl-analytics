@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .streamlit/secrets.toml
 data/seasons/*.parquet
+data/seasons_ngs_rushing/*.parquet
 data/static/*.parquet
 
 # Base de données DuckDB (fichier binaire volumineux)
