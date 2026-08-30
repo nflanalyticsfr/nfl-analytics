@@ -21,7 +21,6 @@ from social_cards import (
 )
 from styles import PAGE_FONT_CSS
 
-st.set_page_config(page_title="Cartes sociales", layout="wide")
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
 render_header()
 render_global_search()

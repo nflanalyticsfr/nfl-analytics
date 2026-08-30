@@ -15,7 +15,6 @@ from queries import (
 )
 from styles import PAGE_FONT_CSS
 
-st.set_page_config(page_title="Classements", layout="wide")
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
 render_header()
 render_global_search()
