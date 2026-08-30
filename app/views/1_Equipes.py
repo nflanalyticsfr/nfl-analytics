@@ -16,7 +16,6 @@ from constants import DEFAULT_TEAM
 from styles import PAGE_FONT_CSS
 import plotly.graph_objects as go
 
-st.set_page_config(page_title="Equipes", layout="wide")
 
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
 render_header()

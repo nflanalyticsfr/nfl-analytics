@@ -71,7 +71,7 @@ h1, h2, h3 { margin-top: 0.2rem !important; margin-bottom: 0.3rem !important; }
 """
 
 # Style minimal réutilisé par les autres pages (import Manrope, sans le hero).
-# Évite de dupliquer ce bloc de 4 lignes dans chaque fichier app/pages/*.py.
+# Évite de dupliquer ce bloc de 4 lignes dans chaque fichier app/views/*.py.
 PAGE_FONT_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
