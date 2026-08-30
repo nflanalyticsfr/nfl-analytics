@@ -8,16 +8,11 @@ Une application Streamlit pour explorer les statistiques, les performances et le
 
 ## 📊 Fonctionnalités
 
-### 🏠 [Page d'accueil](app/pages/0_Accueil.py)
+### 🏠 [Page d'accueil](app/Accueil.py)
 - Vue d'ensemble des statistiques globales (nombre de plays, matchs, équipes, saisons)
 - Leaders de la ligue (passing yards, rushing yards, receiving yards, sacks, interceptions)
 - Leaders analytiques (EPA/Play, Success Rate, Offensive/Defensive EPA)
 - Derniers matchs joués
-
-### 📅 [Matchs](app/pages/3_Matchs.py)
-- Détail d'un match : score, drives, win probability
-- Play-by-play complet avec EPA, success rate, et métriques avancées
-- Visualisation de la progression du score et de la win probability
 
 ### 🏈 [Équipes](app/pages/1_Equipes.py)
 - Fiche complète par équipe : bilan (V/D/N), EPA offensif/défensif
@@ -31,6 +26,11 @@ Une application Streamlit pour explorer les statistiques, les performances et le
 - Statistiques complètes (passing, rushing, receiving, pression, défense)
 - EPA par saison et tendance hebdomadaire
 - Bio (taille, poids, position, équipe)
+
+### 📅 [Matchs](app/pages/3_Matchs.py)
+- Détail d'un match : score, drives, win probability
+- Play-by-play complet avec EPA, success rate, et métriques avancées
+- Visualisation de la progression du score et de la win probability
 
 ### 🏆 [Classements](app/pages/4_Classements.py)
 - Meilleurs joueurs (QB, RB, WR) par saison ou par semaine
@@ -52,14 +52,6 @@ Une application Streamlit pour explorer les statistiques, les performances et le
 ### ℹ️ [À propos](app/pages/7_A_propos.py)
 - Source des données et méthodologie
 - Formulaire de feedback
-
-### Navigation
-`app/Accueil.py` est un routeur minimal : il définit l'ordre, le titre et
-l'icône de chaque page via `st.navigation()` (Streamlit 1.36+), plutôt que
-de laisser l'ordre dépendre des préfixes numériques des noms de fichiers.
-Pour réordonner les pages ou changer un titre/icône, tout se passe dans ce
-seul fichier — voir son docstring avant de toucher aux `url_path` (les liens
-internes de `queries.py` en dépendent).
 
 ---
 
@@ -119,13 +111,12 @@ L'application sera accessible à l'adresse : [http://localhost:8501](http://loca
 ```
 nfl-analytics/
 ├── app/                          # Application Streamlit
-│   ├── Accueil.py                # Routeur (Main file path Streamlit Cloud) — ordre/titres/icônes des pages via st.navigation()
+│   ├── Accueil.py                # Page d'accueil (point d'entrée)
 │   ├── constants.py              # Constantes partagées (saisons, équipe par défaut)
 │   ├── queries.py                # Couche d'accès aux données (requêtes DuckDB)
 │   ├── styles.py                 # Feuilles de style CSS
 │   ├── social_cards.py           # Génération des cartes sociales (Pillow)
-│   └── pages/                    # Pages Streamlit (le préfixe numérique n'affecte plus l'ordre, gardé pour le tri dans l'explorateur de fichiers)
-│       ├── 0_Accueil.py
+│   └── pages/                    # Pages Streamlit
 │       ├── 1_Equipes.py
 │       ├── 2_Joueurs.py
 │       ├── 3_Matchs.py

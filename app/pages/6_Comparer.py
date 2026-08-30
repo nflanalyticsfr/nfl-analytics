@@ -7,6 +7,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from queries import get_all_teams, get_team_epa_by_season_multi, get_team_colors, couleur_texte_contraste, style_dataframe, render_table, render_global_search, render_footer, render_header
 from styles import PAGE_FONT_CSS
 
+st.set_page_config(page_title="Comparer", layout="wide")
 st.markdown(PAGE_FONT_CSS, unsafe_allow_html=True)
 render_header()
 render_global_search()
