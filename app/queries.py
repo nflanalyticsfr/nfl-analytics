@@ -233,29 +233,84 @@ def get_team_epa_by_week(team: str, season: int):
     return df
 
 @st.cache_data(ttl=3600)
-def get_team_epa_by_season_multi(teams: list[str]):
-    """EPA offensif/défensif saison par saison, pour plusieurs équipes en parallèle."""
+def get_team_stats_by_season_multi(teams: list[str]):
+    """Stats comparables saison par saison, pour plusieurs équipes en
+    parallèle — utilisé sur Comparer. Une seule requête (pas de N+1) qui
+    combine plays (EPA, success rate, yards/play, turnovers) et games
+    (bilan V/D/N, points) par (season, team)."""
     con = get_connection()
     placeholders = ", ".join(["?"] * len(teams))
     query = f"""
         WITH offense AS (
-            SELECT season, posteam AS team, AVG(epa) AS epa_offense
+            SELECT season, posteam AS team,
+                AVG(epa) AS epa_offense,
+                AVG(CAST(success AS DOUBLE)) AS success_rate_offense,
+                AVG(yards_gained) AS yards_per_play_offense
             FROM plays
             WHERE play_type IN ('pass', 'run') AND posteam IN ({placeholders})
             GROUP BY season, posteam
         ),
         defense AS (
-            SELECT season, defteam AS team, AVG(epa) AS epa_defense
+            SELECT season, defteam AS team,
+                AVG(epa) AS epa_defense,
+                AVG(CAST(success AS DOUBLE)) AS success_rate_defense,
+                AVG(yards_gained) AS yards_per_play_defense
             FROM plays
             WHERE play_type IN ('pass', 'run') AND defteam IN ({placeholders})
             GROUP BY season, defteam
+        ),
+        turnovers_committed AS (
+            SELECT season, posteam AS team, COUNT(*) AS nb
+            FROM plays
+            WHERE posteam IN ({placeholders}) AND (interception = 1 OR fumble_lost = 1)
+            GROUP BY season, posteam
+        ),
+        turnovers_forced AS (
+            SELECT season, defteam AS team, COUNT(*) AS nb
+            FROM plays
+            WHERE defteam IN ({placeholders}) AND (interception = 1 OR fumble_lost = 1)
+            GROUP BY season, defteam
+        ),
+        games_normalises AS (
+            SELECT season, home_team AS team, home_score AS pts_marques, away_score AS pts_encaisses,
+                CASE WHEN home_score > away_score THEN 1 ELSE 0 END AS victoire,
+                CASE WHEN home_score < away_score THEN 1 ELSE 0 END AS defaite,
+                CASE WHEN home_score = away_score THEN 1 ELSE 0 END AS nul
+            FROM games WHERE home_team IN ({placeholders}) AND home_score IS NOT NULL
+            UNION ALL
+            SELECT season, away_team AS team, away_score AS pts_marques, home_score AS pts_encaisses,
+                CASE WHEN away_score > home_score THEN 1 ELSE 0 END AS victoire,
+                CASE WHEN away_score < home_score THEN 1 ELSE 0 END AS defaite,
+                CASE WHEN away_score = home_score THEN 1 ELSE 0 END AS nul
+            FROM games WHERE away_team IN ({placeholders}) AND away_score IS NOT NULL
+        ),
+        bilan AS (
+            SELECT season, team,
+                SUM(victoire) AS wins, SUM(defaite) AS losses, SUM(nul) AS ties,
+                COUNT(*) AS matchs,
+                AVG(pts_marques) AS points_pour_par_match,
+                AVG(pts_encaisses) AS points_contre_par_match
+            FROM games_normalises
+            GROUP BY season, team
         )
-        SELECT o.season, o.team, o.epa_offense, d.epa_defense
+        SELECT
+            o.season, o.team,
+            o.epa_offense, d.epa_defense,
+            o.success_rate_offense, d.success_rate_defense,
+            o.yards_per_play_offense, d.yards_per_play_defense,
+            COALESCE(tf.nb, 0) - COALESCE(tc.nb, 0) AS turnover_diff,
+            b.wins, b.losses, b.ties,
+            (b.wins + 0.5 * b.ties) / NULLIF(b.matchs, 0) AS win_pct,
+            b.points_pour_par_match, b.points_contre_par_match
         FROM offense o
         JOIN defense d ON o.season = d.season AND o.team = d.team
+        LEFT JOIN turnovers_committed tc ON o.season = tc.season AND o.team = tc.team
+        LEFT JOIN turnovers_forced tf ON o.season = tf.season AND o.team = tf.team
+        LEFT JOIN bilan b ON o.season = b.season AND o.team = b.team
         ORDER BY o.season, o.team
     """
-    df = con.execute(query, teams + teams).fetchdf()
+    params = teams * 6  # 6 IN (...) au total dans la requête ci-dessus
+    df = con.execute(query, params).fetchdf()
     return df
 
 @st.cache_data(ttl=3600)
@@ -541,6 +596,17 @@ TRADUCTIONS_COLONNES = {
     "points_marques": "Points Marqués",
     "score_domicile": "Score Domicile",
     "score_exterieur": "Score Extérieur",
+    "success_rate_offense": "Success Rate Off.",
+    "success_rate_defense": "Success Rate Déf.",
+    "yards_per_play_offense": "Yards/Play Off.",
+    "yards_per_play_defense": "Yards/Play Déf.",
+    "turnover_diff": "Différentiel Turnovers",
+    "wins": "V",
+    "losses": "D",
+    "ties": "N",
+    "win_pct": "Win %",
+    "points_pour_par_match": "Pts Marqués/Match",
+    "points_contre_par_match": "Pts Encaissés/Match",
 }
 
 
