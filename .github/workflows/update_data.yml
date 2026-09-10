@@ -64,17 +64,40 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # NE PAS utiliser "git rebase" ici : database/nfl.duckdb est un
+          # fichier binaire (LFS). Deux versions différentes d'un même blob
+          # binaire ne sont JAMAIS auto-mergeables (contrairement au texte,
+          # où deux modifications sur des lignes différentes fusionnent
+          # proprement) — un rebase plante à coup sûr en conflit dès que
+          # deux rebuilds se chevauchent, peu importe le contenu. Vécu en
+          # prod le 2026-09-10 : concurrency empêche deux runs de tourner
+          # en même temps, mais pas d'avoir un checkout figé AVANT qu'un
+          # autre run (déclenché juste avant) ait fini de pousser sa propre
+          # mise à jour pendant qu'on tourne en file d'attente.
+          #
+          # À la place : on sauvegarde le nouveau nfl.duckdb hors du suivi
+          # Git, on resynchronise le repo sur le vrai état actuel de main
+          # (reset --hard, sans tenter de fusionner quoi que ce soit), puis
+          # on réinjecte le fichier fraîchement reconstruit par-dessus. Le
+          # rebuild le plus récent gagne toujours, sans jamais passer par
+          # une fusion binaire.
+          cp database/nfl.duckdb /tmp/nfl_fresh.duckdb
+
           git add database/nfl.duckdb
           if git diff --cached --quiet; then
             echo "Aucun changement dans la base — rien à committer."
           else
-            git commit -m "Mise à jour des données ($(date -u +%F))"
-            # Le checkout initial date d'avant le pipeline (plusieurs
-            # minutes) : si main a bougé depuis (push manuel, ou concurrency
-            # qui a laissé passer un autre run), un simple `git push`
-            # échoue avec "rejected (fetch first)". On rebase sur le main
-            # actuel juste avant de pousser pour l'éviter.
-            git fetch origin main
-            git rebase origin/main
-            git push
+            for tentative in 1 2 3; do
+              git fetch origin main
+              git reset --hard origin/main
+              cp /tmp/nfl_fresh.duckdb database/nfl.duckdb
+              git add database/nfl.duckdb
+              git commit -m "Mise à jour des données ($(date -u +%F))"
+              if git push; then
+                break
+              fi
+              echo "Push rejeté (tentative $tentative/3), un autre run a dû pousser entre-temps. Nouvel essai..."
+              sleep 5
+            done
           fi
