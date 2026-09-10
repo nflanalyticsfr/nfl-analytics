@@ -137,14 +137,24 @@ def traduire_surface(valeur: str) -> str:
 @st.cache_data(ttl=3600)
 def get_all_teams():
     """Seules les 32 équipes actives sont retenues : celles ayant joué lors
-    de la saison la plus récente en base. Filtre les franchises historiques
-    (ex. St. Louis Rams, Oakland Raiders) qui existent dans le référentiel
-    teams mais n'ont plus joué sous ce nom depuis leur déménagement."""
+    des deux saisons les plus récentes en base (saison courante + précédente,
+    pas MAX(season) seul). Filtre les franchises historiques (ex. St. Louis
+    Rams, Oakland Raiders) qui existent dans le référentiel teams mais n'ont
+    plus joué sous ce nom depuis leur déménagement.
+
+    Fenêtre de 2 saisons plutôt que 1 : juste après le début d'une nouvelle
+    saison NFL, quand seules quelques équipes ont déjà joué leur premier
+    match, filtrer sur season = MAX(season) uniquement ne retournait que ces
+    équipes-là (bug trouvé en CI : 2 équipes au lieu de 32 après le tout
+    premier match ingéré). La saison précédente est nécessairement complète
+    (elle est déjà terminée), donc les 32 équipes actuelles y ont toutes
+    joué — la fenêtre de 2 saisons garantit qu'aucune n'est jamais absente,
+    quel que soit le nombre de matchs déjà joués dans la saison en cours."""
     con = get_connection()
     query = """
         WITH equipes_actives AS (
             SELECT DISTINCT posteam AS team_abbr FROM plays
-            WHERE season = (SELECT MAX(season) FROM plays)
+            WHERE season >= (SELECT MAX(season) FROM plays) - 1
         )
         SELECT t.team_abbr, t.team_name
         FROM teams t
