@@ -194,7 +194,7 @@ with onglet_overview:
         minimum = filtre_passe("ov_min_passe")
         df = get_passing_leaderboard_season(season)
         afficher_leaderboard(
-            df[df["Att"] >= minimum],
+            df[df["Att"] >= minimum] if not df.empty else df,
             colonnes_entieres=["Yds Passe", "Att", "Cmp", "TD", "INT", "1st", "20+", "40+", "Lng", "Sck", "SckY"],
             colonnes_decimales=["Yds/Att", "Cmp%", "Rate", "1st%"],
         )
@@ -204,7 +204,7 @@ with onglet_overview:
         minimum = filtre_course("ov_min_course")
         df = get_rushing_leaderboard_season(season)
         afficher_leaderboard(
-            df[df["Att"] >= minimum],
+            df[df["Att"] >= minimum] if not df.empty else df,
             colonnes_entieres=["Yds Course", "Att", "TD", "20+", "40+", "Lng", "Rush 1st", "Rush FUM"],
             colonnes_decimales=["Yds/Course", "Rush 1st%"],
         )
@@ -214,7 +214,7 @@ with onglet_overview:
         minimum = filtre_reception("ov_min_reception")
         df = get_receiving_leaderboard_season(season)
         afficher_leaderboard(
-            df[df["Cibles"] >= minimum],
+            df[df["Cibles"] >= minimum] if not df.empty else df,
             colonnes_entieres=["Rec", "Yds", "TD", "20+", "40+", "LNG", "Rec 1st", "Rec FUM", "Cibles"],
             colonnes_decimales=["1st%", "Rec YAC/R"],
         )

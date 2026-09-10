@@ -1061,9 +1061,9 @@ def get_defense_leaderboard_season(season: int, min_actions: int = 10):
     """
     params = [season] * len(colonnes) + [min_actions, season]
     df = con.execute(query, params).fetchdf()
-    if df.empty:
-        return df
 
+    # Pas de "if df.empty: return df" avant le rename — même bug que
+    # get_passing_leaderboard_season, voir son commentaire pour le détail.
     for col in ["tacles_totaux", "tacles_pour_perte", "sacks_totaux", "pressions_qb",
                 "interceptions", "passes_defendues", "fumbles_forces"]:
         df[col] = df[col].fillna(0)
@@ -1552,8 +1552,14 @@ def get_passing_leaderboard_season(season: int, min_attempts: int = 50):
         ORDER BY b.pass_yds DESC
     """
     df = con.execute(query, [season, min_attempts, season]).fetchdf()
-    if df.empty:
-        return df
+
+    # PAS de "if df.empty: return df" ici : ça renverrait les colonnes SQL
+    # brutes (att, cmp...) au lieu des noms renommés (Att, Cmp...) attendus
+    # par les appelants (ex. 5_Analytics.py fait df["Att"] >= minimum) —
+    # bug réel trouvé en début de saison 2026, quand aucun joueur n'a encore
+    # 50 tentatives et que la requête renvoie 0 ligne : KeyError('Att') côté
+    # appelant. Le rename + la sélection de colonnes ci-dessous fonctionnent
+    # normalement sur un DataFrame à 0 ligne, donc pas besoin de ce garde.
 
     # Yds/Att, Cmp%, 1st% et le passer rating (formule NFL officielle à 4
     # composantes, chacune plafonnée entre 0 et 2.375) sont dérivés ici en
@@ -1605,9 +1611,9 @@ def get_rushing_leaderboard_season(season: int, min_attempts: int = 30):
         ORDER BY rush_yds DESC
     """
     df = con.execute(query, [season, min_attempts]).fetchdf()
-    if df.empty:
-        return df
 
+    # Pas de "if df.empty: return df" avant le rename — même bug que
+    # get_passing_leaderboard_season, voir son commentaire pour le détail.
     df["first_pct"] = (df["first_downs"] / df["att"] * 100).round(1)
     df["ypc"] = (df["rush_yds"] / df["att"]).round(1)
     df = df.rename(columns={
@@ -1648,9 +1654,9 @@ def get_receiving_leaderboard_season(season: int, min_targets: int = 20):
         ORDER BY yds DESC
     """
     df = con.execute(query, [season, min_targets]).fetchdf()
-    if df.empty:
-        return df
 
+    # Pas de "if df.empty: return df" avant le rename — même bug que
+    # get_passing_leaderboard_season, voir son commentaire pour le détail.
     rec_sans_zero = df["rec"].replace(0, pd.NA)
     df["first_pct"] = (df["first_downs"] / rec_sans_zero * 100).round(1)
     df["yac_r"] = (df["yac_total"] / rec_sans_zero).round(1)
@@ -1691,9 +1697,9 @@ def get_passing_leaderboard_epa_season(season: int, min_dropbacks: int = 100):
         ORDER BY epa_per_play DESC
     """
     df = con.execute(query, [season, min_dropbacks]).fetchdf()
-    if df.empty:
-        return df
 
+    # Pas de "if df.empty: return df" avant le rename — même bug que
+    # get_passing_leaderboard_season, voir son commentaire pour le détail.
     df["taux_pression"] = (df["pressions_subies"] / df["dropbacks"]).round(3)
     df = df.rename(columns={
         "player": "Player", "dropbacks": "Dropbacks", "epa_per_play": "EPA/Dropback",
@@ -1734,9 +1740,9 @@ def get_rushing_leaderboard_epa_season(season: int, min_attempts: int = 30):
         ORDER BY epa_per_play DESC
     """
     df = con.execute(query, [season, min_attempts]).fetchdf()
-    if df.empty:
-        return df
 
+    # Pas de "if df.empty: return df" avant le rename — même bug que
+    # get_passing_leaderboard_season, voir son commentaire pour le détail.
     df = df.rename(columns={
         "player": "Player", "courses": "Att", "yards": "Yds Course", "epa_per_play": "EPA/Course",
         "ryoe": "RYOE", "ryoe_per_att": "RYOE/Att",
@@ -1770,9 +1776,9 @@ def get_receiving_leaderboard_epa_season(season: int, min_targets: int = 20):
         ORDER BY epa_per_play DESC
     """
     df = con.execute(query, [season, min_targets]).fetchdf()
-    if df.empty:
-        return df
 
+    # Pas de "if df.empty: return df" avant le rename — même bug que
+    # get_passing_leaderboard_season, voir son commentaire pour le détail.
     df = df.rename(columns={
         "player": "Player", "cibles": "Cibles", "receptions": "Rec", "yards": "Yds",
         "epa_per_play": "EPA/Cible", "air_yards_moy": "Air Yds Moy.", "yac_moy": "YAC Moy.",
