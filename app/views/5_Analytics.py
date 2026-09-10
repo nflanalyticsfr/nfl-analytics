@@ -192,7 +192,7 @@ with onglet_overview:
     with pass_tab:
         st.subheader("Passeurs — saison complète")
         minimum = filtre_passe("ov_min_passe")
-        df = get_passing_leaderboard_season(season)
+        df = get_passing_leaderboard_season(season, min_attempts=minimum)
         afficher_leaderboard(
             df[df["Att"] >= minimum] if not df.empty else df,
             colonnes_entieres=["Yds Passe", "Att", "Cmp", "TD", "INT", "1st", "20+", "40+", "Lng", "Sck", "SckY"],
@@ -202,7 +202,7 @@ with onglet_overview:
     with rush_tab:
         st.subheader("Coureurs — saison complète")
         minimum = filtre_course("ov_min_course")
-        df = get_rushing_leaderboard_season(season)
+        df = get_rushing_leaderboard_season(season, min_attempts=minimum)
         afficher_leaderboard(
             df[df["Att"] >= minimum] if not df.empty else df,
             colonnes_entieres=["Yds Course", "Att", "TD", "20+", "40+", "Lng", "Rush 1st", "Rush FUM"],
@@ -212,7 +212,7 @@ with onglet_overview:
     with rec_tab:
         st.subheader("Receveurs — saison complète")
         minimum = filtre_reception("ov_min_reception")
-        df = get_receiving_leaderboard_season(season)
+        df = get_receiving_leaderboard_season(season, min_targets=minimum)
         afficher_leaderboard(
             df[df["Cibles"] >= minimum] if not df.empty else df,
             colonnes_entieres=["Rec", "Yds", "TD", "20+", "40+", "LNG", "Rec 1st", "Rec FUM", "Cibles"],
@@ -223,7 +223,7 @@ with onglet_overview:
         st.subheader("IDP (Individual Defensive Players) — saison complète")
         st.caption("Tacles, TFL, sacks, pressions, INT, passes défendues, fumbles forcés — toutes positions défensives confondues.")
         minimum = st.number_input("Actions défensives minimum", min_value=0, value=10, step=5, key="ov_min_idp")
-        df = get_defense_leaderboard_season(season)
+        df = get_defense_leaderboard_season(season, min_actions=minimum)
         afficher_leaderboard(
             df[df["Tacles"] + df["TFL"] + df["Sacks"] + df["Pressions"] + df["INT"] + df["PD"] + df["FF"] >= minimum] if not df.empty else df,
             colonnes_entieres=["Tacles", "TFL", "Sacks", "Pressions", "INT", "PD", "FF"],
@@ -262,7 +262,7 @@ with onglet_avance:
         with pass_tab_epa:
             st.subheader("Passeurs — EPA saison complète")
             minimum = filtre_passe("pro_min_passe")
-            df = get_passing_leaderboard_epa_season(season)
+            df = get_passing_leaderboard_epa_season(season, min_dropbacks=minimum)
             afficher_leaderboard(
                 df[df["Dropbacks"] >= minimum] if not df.empty else df,
                 colonnes_entieres=["Dropbacks", "Pressions subies", "Sacks subis"],
@@ -272,7 +272,7 @@ with onglet_avance:
         with rush_tab_epa:
             st.subheader("Coureurs — EPA saison complète")
             minimum = filtre_course("pro_min_course")
-            df = get_rushing_leaderboard_epa_season(season)
+            df = get_rushing_leaderboard_epa_season(season, min_attempts=minimum)
             afficher_leaderboard(
                 df[df["Att"] >= minimum] if not df.empty else df,
                 colonnes_entieres=["Att", "Yds Course"],
@@ -288,7 +288,7 @@ with onglet_avance:
         with rec_tab_epa:
             st.subheader("Receveurs — EPA saison complète")
             minimum = filtre_reception("pro_min_reception")
-            df = get_receiving_leaderboard_epa_season(season)
+            df = get_receiving_leaderboard_epa_season(season, min_targets=minimum)
             afficher_leaderboard(
                 df[df["Cibles"] >= minimum] if not df.empty else df,
                 colonnes_entieres=["Cibles", "Rec", "Yds"],
