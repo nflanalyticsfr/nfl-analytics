@@ -429,8 +429,11 @@ def get_team_rank_label(df_all_teams, team_abbr: str, metric_col: str) -> str | 
     return f"#{rang} / {total}"
 
 @st.cache_data(ttl=3600)
-def get_team_qb_leaders(team: str, season: int, min_dropbacks: int = 20):
-    """Top 3 QB d'une équipe sur une saison, classés par EPA/dropback."""
+def get_team_qb_leaders(team: str, season: int, min_dropbacks: int = 1):
+    """Top 3 QB d'une équipe sur une saison, classés par EPA/dropback.
+
+    min_dropbacks=1 (pas 20) : voir le commentaire de get_top_qb_season_yards
+    dans queries.py — même raisonnement, LIMIT 3 protège déjà."""
     con = get_connection()
     query = """
         SELECT p.passer_player_name AS player, p.posteam AS team,
@@ -460,8 +463,10 @@ TRADUCTION_SURFACE = {
 }
 
 @st.cache_data(ttl=3600)
-def get_team_rb_leaders(team: str, season: int, min_carries: int = 10):
-    """Top 3 RB d'une équipe sur une saison, classés par EPA/course."""
+def get_team_rb_leaders(team: str, season: int, min_carries: int = 1):
+    """Top 3 RB d'une équipe sur une saison, classés par EPA/course.
+
+    min_carries=1 (pas 10) : voir le commentaire de get_top_qb_season_yards."""
     con = get_connection()
     query = """
         SELECT p.rusher_player_name AS player, p.posteam AS team,
@@ -480,8 +485,10 @@ def get_team_rb_leaders(team: str, season: int, min_carries: int = 10):
     return df
 
 @st.cache_data(ttl=3600)
-def get_team_wr_leaders(team: str, season: int, min_targets: int = 10):
-    """Top 3 receveurs d'une équipe sur une saison, classés par EPA/cible."""
+def get_team_wr_leaders(team: str, season: int, min_targets: int = 1):
+    """Top 3 receveurs d'une équipe sur une saison, classés par EPA/cible.
+
+    min_targets=1 (pas 10) : voir le commentaire de get_top_qb_season_yards."""
     con = get_connection()
     query = """
         SELECT p.receiver_player_name AS player, p.posteam AS team,
@@ -500,8 +507,10 @@ def get_team_wr_leaders(team: str, season: int, min_targets: int = 10):
     return df
 
 @st.cache_data(ttl=3600)
-def get_team_qb_leaders_yards(team: str, season: int, min_dropbacks: int = 20):
-    """Top 3 QB d'une équipe sur une saison, classés par yards lancés (vue « stats classiques »)."""
+def get_team_qb_leaders_yards(team: str, season: int, min_dropbacks: int = 1):
+    """Top 3 QB d'une équipe sur une saison, classés par yards lancés (vue « stats classiques »).
+
+    min_dropbacks=1 (pas 20) : voir le commentaire de get_top_qb_season_yards."""
     con = get_connection()
     query = """
         SELECT p.passer_player_name AS player, p.posteam AS team,
@@ -520,8 +529,10 @@ def get_team_qb_leaders_yards(team: str, season: int, min_dropbacks: int = 20):
     return df
 
 @st.cache_data(ttl=3600)
-def get_team_rb_leaders_yards(team: str, season: int, min_carries: int = 10):
-    """Top 3 RB d'une équipe sur une saison, classés par yards parcourus."""
+def get_team_rb_leaders_yards(team: str, season: int, min_carries: int = 1):
+    """Top 3 RB d'une équipe sur une saison, classés par yards parcourus.
+
+    min_carries=1 (pas 10) : voir le commentaire de get_top_qb_season_yards."""
     con = get_connection()
     query = """
         SELECT p.rusher_player_name AS player, p.posteam AS team,
@@ -540,8 +551,10 @@ def get_team_rb_leaders_yards(team: str, season: int, min_carries: int = 10):
     return df
 
 @st.cache_data(ttl=3600)
-def get_team_wr_leaders_yards(team: str, season: int, min_targets: int = 10):
-    """Top 3 receveurs d'une équipe sur une saison, classés par yards attrapés."""
+def get_team_wr_leaders_yards(team: str, season: int, min_targets: int = 1):
+    """Top 3 receveurs d'une équipe sur une saison, classés par yards attrapés.
+
+    min_targets=1 (pas 10) : voir le commentaire de get_top_qb_season_yards."""
     con = get_connection()
     query = """
         SELECT p.receiver_player_name AS player, p.posteam AS team,
@@ -1373,8 +1386,14 @@ def get_game_play_by_play(game_id: str, quarter: int | None = None):
 # ──────────────────────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600)
-def get_top_qb_season_yards(season: int, min_dropbacks: int = 100):
-    """Top 3 QB de la ligue sur une saison, classés par yards lancés."""
+def get_top_qb_season_yards(season: int, min_dropbacks: int = 1):
+    """Top 3 QB de la ligue sur une saison, classés par yards lancés.
+
+    min_dropbacks=1 (pas 100) : contrairement à un leaderboard complet, un
+    podium Top 3 n'a pas besoin d'un plancher de volume pour éviter un faux
+    leader — LIMIT 3 fait déjà le travail. Un seuil élevé cassait l'affichage
+    en tout début de saison (aucun QB n'a 100 dropbacks après 1 match) sans
+    aucun bénéfice en contrepartie."""
     con = get_connection()
     query = """
         SELECT p.passer_player_name AS player, p.posteam AS team,
@@ -1393,8 +1412,12 @@ def get_top_qb_season_yards(season: int, min_dropbacks: int = 100):
     return df
 
 @st.cache_data(ttl=3600)
-def get_top_rb_season_yards(season: int, min_carries: int = 50):
-    """Top 3 RB de la ligue sur une saison, classés par yards parcourus."""
+def get_top_rb_season_yards(season: int, min_carries: int = 1):
+    """Top 3 RB de la ligue sur une saison, classés par yards parcourus.
+
+    min_carries=1 (pas 50) : voir le commentaire de get_top_qb_season_yards,
+    même raisonnement — LIMIT 3 protège déjà contre un faux leader, pas
+    besoin d'un plancher de volume en plus."""
     con = get_connection()
     query = """
         SELECT p.rusher_player_name AS player, p.posteam AS team,
@@ -1413,8 +1436,11 @@ def get_top_rb_season_yards(season: int, min_carries: int = 50):
     return df
 
 @st.cache_data(ttl=3600)
-def get_top_wr_season_yards(season: int, min_targets: int = 30):
-    """Top 3 receveurs de la ligue sur une saison, classés par yards attrapés."""
+def get_top_wr_season_yards(season: int, min_targets: int = 1):
+    """Top 3 receveurs de la ligue sur une saison, classés par yards attrapés.
+
+    min_targets=1 (pas 30) : voir le commentaire de get_top_qb_season_yards,
+    même raisonnement."""
     con = get_connection()
     query = """
         SELECT p.receiver_player_name AS player, p.posteam AS team,
@@ -1453,8 +1479,10 @@ def get_top_teams_offense_yards_season(season: int):
 # ─────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600)
-def get_top_qb_season_epa(season: int, min_dropbacks: int = 100):
-    """Top 3 QB de la ligue sur une saison, classés par EPA/dropback."""
+def get_top_qb_season_epa(season: int, min_dropbacks: int = 1):
+    """Top 3 QB de la ligue sur une saison, classés par EPA/dropback.
+
+    min_dropbacks=1 (pas 100) : voir le commentaire de get_top_qb_season_yards."""
     con = get_connection()
     query = """
         SELECT p.passer_player_name AS player, p.posteam AS team,
@@ -1473,8 +1501,10 @@ def get_top_qb_season_epa(season: int, min_dropbacks: int = 100):
     return df
 
 @st.cache_data(ttl=3600)
-def get_top_rb_season_epa(season: int, min_carries: int = 50):
-    """Top 3 RB de la ligue sur une saison, classés par EPA/course."""
+def get_top_rb_season_epa(season: int, min_carries: int = 1):
+    """Top 3 RB de la ligue sur une saison, classés par EPA/course.
+
+    min_carries=1 (pas 50) : voir le commentaire de get_top_qb_season_yards."""
     con = get_connection()
     query = """
         SELECT p.rusher_player_name AS player, p.posteam AS team,
@@ -1493,8 +1523,10 @@ def get_top_rb_season_epa(season: int, min_carries: int = 50):
     return df
 
 @st.cache_data(ttl=3600)
-def get_top_wr_season_epa(season: int, min_targets: int = 30):
-    """Top 3 receveurs de la ligue sur une saison, classés par EPA/cible."""
+def get_top_wr_season_epa(season: int, min_targets: int = 1):
+    """Top 3 receveurs de la ligue sur une saison, classés par EPA/cible.
+
+    min_targets=1 (pas 30) : voir le commentaire de get_top_qb_season_yards."""
     con = get_connection()
     query = """
         SELECT p.receiver_player_name AS player, p.posteam AS team,
@@ -2324,9 +2356,12 @@ def get_season_interceptions_leader(season: int):
 
 
 @st.cache_data(ttl=3600)
-def get_season_success_rate_leader(season: int, min_dropbacks: int = 100):
+def get_season_success_rate_leader(season: int, min_dropbacks: int = 1):
     """QB avec le meilleur taux de jeux réussis (success rate) sur ses
-    dropbacks, saison entière — pour le panneau Analytics Leaders."""
+    dropbacks, saison entière — pour le panneau Analytics Leaders.
+
+    min_dropbacks=1 (pas 100) : voir le commentaire de get_top_qb_season_yards
+    — même raisonnement, cohérence avec les autres leaders du même panneau."""
     con = get_connection()
     query = """
         SELECT p.passer_player_name AS player, p.posteam AS team,
