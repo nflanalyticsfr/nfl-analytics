@@ -2403,49 +2403,34 @@ def _attrs_lien(href):
 def _lien_equipe(contenu_html, abbr):
     """Enrobe un fragment HTML d'un lien vers la fiche équipe (Equipes).
     Le slug d'URL suit le nom du fichier de page (pages/1_Equipes.py) —
-    si ce fichier est renommé, ce href doit être mis à jour en conséquence.
-
-    display:contents sur le <a> : sans ça, le <a> devient lui-même
-    l'élément flex direct (au lieu du contenu qu'il enrobe), ce qui casse
-    flex:1/min-width:0/flex-shrink:0 posés sur ce contenu — trouvé en prod
-    via une valeur EPA poussée hors du cadre par un nom d'équipe trop long
-    qui ne se tronquait plus en ellipsis. display:contents fait « disparaître »
-    le <a> de l'arbre de boîtes, ses enfants redeviennent les vrais éléments
-    flex, sans rien perdre de la zone cliquable."""
+    si ce fichier est renommé, ce href doit être mis à jour en conséquence."""
     if not abbr or (isinstance(abbr, float) and abbr != abbr):
         return contenu_html
     href = f"Equipes?team={abbr}"
-    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;display:contents;">{contenu_html}</a>'
+    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;">{contenu_html}</a>'
 
 def _lien_joueur(contenu_html, player_id, season=None):
     """Enrobe un fragment HTML d'un lien vers la fiche joueur (Joueurs).
     season est inclus quand disponible pour que la page Joueurs présélectionne
     la bonne saison (sinon un joueur absent de la saison affichée par défaut
-    ne serait pas retrouvé). Slug d'URL lié au nom de pages/2_Joueurs.py.
-
-    display:contents sur le <a> : voir le commentaire de _lien_equipe,
-    même raisonnement (évite que le <a> n'interfère avec le layout flex
-    du contenu qu'il enrobe)."""
+    ne serait pas retrouvé). Slug d'URL lié au nom de pages/2_Joueurs.py."""
     if not isinstance(player_id, str) or not player_id:
         return contenu_html
     href = f"Joueurs?player={player_id}"
     if season:
         href += f"&season={season}"
-    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;display:contents;">{contenu_html}</a>'
+    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;">{contenu_html}</a>'
 
 def _lien_match(contenu_html, game_id):
     """Enrobe un fragment HTML d'un lien vers la fiche match (Matchs).
     game_id encode déjà saison et semaine (convention nflverse
     'saison_semaine_visiteur_domicile'), donc la page Matchs peut s'y
     présélectionner sans paramètre supplémentaire. Slug d'URL lié au nom
-    de pages/3_Matchs.py.
-
-    display:contents sur le <a> : voir le commentaire de _lien_equipe,
-    même raisonnement."""
+    de pages/3_Matchs.py."""
     if not game_id or (isinstance(game_id, float) and game_id != game_id):
         return contenu_html
     href = f"Matchs?game={game_id}"
-    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;display:contents;">{contenu_html}</a>'
+    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;">{contenu_html}</a>'
 
 def _aplatir_html(html):
     """Aplatit un fragment HTML multi-lignes en une seule ligne avant de
@@ -2794,8 +2779,8 @@ def render_podium(df, metric_col, decimals=3, season=None):
 
         if isinstance(photo_url, str) and photo_url:
             avatar = (
-                f'<img src="{photo_url}" style="width:70px !important;height:70px !important;'
-                f'border-radius:50% !important;object-fit:cover !important;border:3px solid {couleur_equipe};'
+                f'<img src="{photo_url}" style="width:70px;height:70px;'
+                f'border-radius:50%;object-fit:cover;border:3px solid {couleur_equipe};'
                 f'box-shadow:0 2px 8px rgba(0,0,0,0.3);">'
             )
         else:
@@ -2966,8 +2951,8 @@ def render_top_players_list(df):
 
         if isinstance(photo, str) and photo:
             avatar = (
-                f'<img src="{photo}" style="width:32px !important;height:32px !important;border-radius:50% !important;'
-                f'object-fit:cover !important;border:2px solid {couleur};">'
+                f'<img src="{photo}" style="width:32px;height:32px;border-radius:50%;'
+                f'object-fit:cover;border:2px solid {couleur};">'
             )
         else:
             initiales = "".join([p[0] for p in nom.split(".") if p])[:2].upper() if nom else "?"
@@ -3056,8 +3041,8 @@ def render_game_performers(performers: list, couleur_equipe: str, season=None):
 
         if isinstance(photo, str) and photo:
             avatar = (
-                f'<img src="{photo}" style="width:36px !important;height:36px !important;border-radius:50% !important;'
-                f'object-fit:cover !important;border:2px solid {couleur_equipe};">'
+                f'<img src="{photo}" style="width:36px;height:36px;border-radius:50%;'
+                f'object-fit:cover;border:2px solid {couleur_equipe};">'
             )
         else:
             initiales = "".join([p[0] for p in nom.split(".") if p])[:2].upper() if nom else "?"
@@ -3177,8 +3162,8 @@ def render_insight_leaders(entries):
 
         if isinstance(photo, str) and photo:
             avatar = (
-                f'<img src="{photo}" style="width:30px !important;height:30px !important;border-radius:50% !important;'
-                f'object-fit:cover !important;border:2px solid {couleur};flex-shrink:0;">'
+                f'<img src="{photo}" style="width:30px;height:30px;border-radius:50%;'
+                f'object-fit:cover;border:2px solid {couleur};flex-shrink:0;">'
             )
         elif logo:
             avatar = f'<img src="{logo}" height="26" style="flex-shrink:0;">'
