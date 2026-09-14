@@ -2407,7 +2407,7 @@ def _lien_equipe(contenu_html, abbr):
     if not abbr or (isinstance(abbr, float) and abbr != abbr):
         return contenu_html
     href = f"Equipes?team={abbr}"
-    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;">{contenu_html}</a>'
+    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;display:contents;">{contenu_html}</a>'
 
 def _lien_joueur(contenu_html, player_id, season=None):
     """Enrobe un fragment HTML d'un lien vers la fiche joueur (Joueurs).
@@ -2419,7 +2419,7 @@ def _lien_joueur(contenu_html, player_id, season=None):
     href = f"Joueurs?player={player_id}"
     if season:
         href += f"&season={season}"
-    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;">{contenu_html}</a>'
+    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;display:contents;">{contenu_html}</a>'
 
 def _lien_match(contenu_html, game_id):
     """Enrobe un fragment HTML d'un lien vers la fiche match (Matchs).
@@ -2430,7 +2430,7 @@ def _lien_match(contenu_html, game_id):
     if not game_id or (isinstance(game_id, float) and game_id != game_id):
         return contenu_html
     href = f"Matchs?game={game_id}"
-    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;">{contenu_html}</a>'
+    return f'<a {_attrs_lien(href)} style="text-decoration:none;color:inherit;display:contents;">{contenu_html}</a>'
 
 def _aplatir_html(html):
     """Aplatit un fragment HTML multi-lignes en une seule ligne avant de
