@@ -45,10 +45,40 @@ DB_PATH = Path(__file__).resolve().parent.parent / "database" / "nfl.duckdb"
 
 @st.cache_resource
 def get_connection():
-    """Connexion DuckDB en lecture seule, réutilisée pour toute la session (voir cache_resource)."""
+    """Connexion DuckDB en lecture seule, réutilisée pour toute la session
+    (voir cache_resource — vidée avec cache_data par
+    rafraichir_cache_si_donnees_changees quand le fichier change)."""
     # read_only=True évite un conflit de verrou si un job d'ingestion
     # écrit sur le fichier pendant qu'un utilisateur consulte l'app.
     return duckdb.connect(str(DB_PATH), read_only=True)
+
+
+_dernier_mtime_connu = None
+
+
+def rafraichir_cache_si_donnees_changees():
+    """Vide tout le cache (requêtes + connexion) dès que
+    database/nfl.duckdb a été réécrit par le pipeline d'ingestion —
+    évite d'avoir à redémarrer l'app manuellement après chaque mise à
+    jour des données. Coût : un check de mtime (quasi gratuit) à chaque
+    rerun. À appeler une fois, tout en haut du routeur (Accueil.py),
+    avant tout rendu.
+
+    Pourquoi pas juste un TTL court sur chaque @st.cache_data : il y en
+    a 88 dans ce fichier, et un TTL court les recalculerait inutilement
+    pendant toute la semaine où les données ne changent pas. Ici, zéro
+    recalcul tant que le fichier ne bouge pas, fraîcheur immédiate dès
+    qu'il bouge — et la connexion DuckDB elle-même est aussi renouvelée
+    (cache_resource.clear()), pas seulement les résultats de requêtes,
+    sinon elle continuerait de pointer vers l'ancien fichier."""
+    global _dernier_mtime_connu
+    if not DB_PATH.exists():
+        return
+    mtime_actuel = DB_PATH.stat().st_mtime
+    if _dernier_mtime_connu is not None and mtime_actuel != _dernier_mtime_connu:
+        st.cache_data.clear()
+        st.cache_resource.clear()
+    _dernier_mtime_connu = mtime_actuel
 
 
 # ──────────────────────────────────────────────────────────────────────────────

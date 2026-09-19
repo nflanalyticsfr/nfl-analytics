@@ -31,6 +31,17 @@ et le tri dans l'explorateur de fichiers) n'ont plus d'effet sur l'ordre
 ni sur l'URL depuis cette migration vers st.navigation().
 """
 import streamlit as st
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent))
+from queries import rafraichir_cache_si_donnees_changees
+
+# Vérifie si database/nfl.duckdb a été mis à jour depuis le dernier rerun
+# (n'importe quel utilisateur, même process) et vide le cache si oui — voir
+# le docstring de la fonction dans queries.py. Fait ici, avant st.navigation,
+# pour tourner sur CHAQUE interaction, pas juste au premier chargement.
+rafraichir_cache_si_donnees_changees()
 
 st.set_page_config(page_title="NFL Analytics FR", layout="wide", page_icon="🏈")
 
