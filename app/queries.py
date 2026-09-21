@@ -1276,13 +1276,22 @@ def get_game_info(game_id: str):
 @st.cache_data(ttl=3600)
 def get_game_win_probability(game_id: str):
     """Win probability du point de vue de l'équipe à domicile, reconstruite
-    depuis wp (probabilité de l'équipe en possession) selon qui a le ballon."""
+    depuis wp (probabilité de l'équipe en possession) selon qui a le ballon.
+
+    posteam IS NOT NULL exclut les lignes comme les timeouts (play_type
+    'no_play' avec posteam=NULL en nflverse) : CASE WHEN posteam=home_team
+    évalue NULL=home_team à NULL (ni vrai ni faux) en SQL, tombe dans le
+    ELSE, et inverse (1-wp) une valeur qui n'était orientée pour aucune des
+    deux équipes — d'où des pics parasites à ~0% ou ~100% à chaque timeout
+    sur le graphique. Les pénalités taguées 'no_play' mais avec un posteam
+    valide restent affichées normalement, seules les lignes sans posteam
+    sont concernées."""
     con = get_connection()
     query = """
         SELECT play_id,
                CASE WHEN posteam = home_team THEN wp ELSE 1 - wp END AS home_wp
         FROM plays
-        WHERE game_id = ? AND wp IS NOT NULL
+        WHERE game_id = ? AND wp IS NOT NULL AND posteam IS NOT NULL
         ORDER BY play_id
     """
     df = con.execute(query, [game_id]).fetchdf()
